@@ -1,9 +1,6 @@
 ## Cách dùng
 
-- Mở `../index.html` để vào từ điển từ thư mục gốc.
-- Hoặc mở trực tiếp `./index.html`.
-- Không cần backend.
-- Không cần cài web server để sử dụng cơ bản.
+-Clone về và mở file 'index.html'
 
 ## Chức năng hiện có
 
