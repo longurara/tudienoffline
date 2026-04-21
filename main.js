@@ -1,16 +1,41 @@
 (function () {
-  const data = window.DICTIONARY_DATA
   const searchInput = document.getElementById('search-input')
   const clearButton = document.getElementById('clear-button')
   const status = document.getElementById('status')
+  const sourceHint = document.getElementById('source-hint')
   const searchHint = document.getElementById('search-hint')
   const results = document.getElementById('results')
   const resultCount = document.getElementById('result-count')
   const detailTitle = document.getElementById('detail-title')
   const detailContent = document.getElementById('detail-content')
-  const modeButtons = Array.from(document.querySelectorAll('.mode-button'))
+  const modeButtons = Array.from(document.querySelectorAll('.mode-button[data-mode]'))
+  const sourceButtons = Array.from(document.querySelectorAll('.source-button'))
   const maxResults = 80
   const plainTextCache = new Map()
+
+  const datasetMeta = {
+    dict1: {
+      key: 'dict1',
+      label: 'Dictionary 1',
+      shortLabel: 'D1',
+      page: './index.html',
+      hint: 'Dictionary 1 được nạp trước để mở nhanh hơn. Phù hợp khi bạn muốn tra nhẹ và phản hồi nhanh hơn.'
+    },
+    dict2: {
+      key: 'dict2',
+      label: 'Dictionary 2',
+      shortLabel: 'D2',
+      page: './index-dict2.html',
+      hint: 'Dictionary 2 là bản FULL, nhiều mục từ hơn nhưng nặng hơn đáng kể khi mở lần đầu.'
+    },
+    both: {
+      key: 'both',
+      label: 'Cả 2',
+      shortLabel: 'D1 + D2',
+      page: './index-both.html',
+      hint: 'Gộp cả hai bộ dữ liệu để tra cứu rộng hơn. Tùy chọn này sẽ nặng nhất.'
+    }
+  }
 
   const modeMeta = {
     auto: {
@@ -30,11 +55,10 @@
     }
   }
 
-  let selectedMode = 'auto'
-
-  if (!data || !Array.isArray(data.entries)) {
-    status.textContent = 'Không tìm thấy dữ liệu từ điển. Hãy chạy bước build dữ liệu trước.'
-    return
+  const state = {
+    selectedMode: 'auto',
+    selectedSource: window.APP_DATASET_MODE || 'dict1',
+    activeDataset: null
   }
 
   function normalizeText(value) {
@@ -78,6 +102,7 @@
     const normalizedValue = normalizeText(value)
     const normalizedQuery = normalizeText(query)
     const start = normalizedValue.indexOf(normalizedQuery)
+
     if (start === -1) {
       return escapeHtml(value)
     }
@@ -119,7 +144,7 @@
   }
 
   function renderDetail(entry) {
-    detailTitle.textContent = entry.word
+    detailTitle.textContent = entry.sourceLabel ? `${entry.word} · ${entry.sourceLabel}` : entry.word
     detailContent.className = 'detail-content'
     detailContent.innerHTML = entry.html
   }
@@ -146,9 +171,20 @@
       button.className = 'result-item'
       button.dataset.entryId = entry.id
 
-      const title = document.createElement('p')
-      title.className = 'result-word'
-      title.innerHTML = highlight(entry.word, rawQuery)
+      const title = document.createElement('div')
+      title.className = 'result-title'
+
+      const titleText = document.createElement('p')
+      titleText.className = 'result-word'
+      titleText.innerHTML = highlight(entry.word, rawQuery)
+      title.appendChild(titleText)
+
+      if (state.selectedSource === 'both') {
+        const tag = document.createElement('span')
+        tag.className = 'source-tag'
+        tag.textContent = entry.sourceLabel
+        title.appendChild(tag)
+      }
 
       const snippet = document.createElement('p')
       snippet.className = 'result-snippet'
@@ -179,20 +215,20 @@
   }
 
   function resolveMode(rawQuery) {
-    if (selectedMode !== 'auto') {
-      return selectedMode
+    if (state.selectedMode !== 'auto') {
+      return state.selectedMode
     }
 
     return isVietnameseQuery(rawQuery) ? 'vi-en' : 'en-vi'
   }
 
-  function searchEnglishToVietnamese(query) {
+  function searchEnglishToVietnamese(entries, query) {
     const exactWord = []
     const startsWith = []
     const containsWord = []
     const containsText = []
 
-    for (const entry of data.entries) {
+    for (const entry of entries) {
       if (entry.wordKey === query) {
         exactWord.push(entry)
       } else if (entry.wordKey.startsWith(query)) {
@@ -213,14 +249,14 @@
       .slice(0, maxResults)
   }
 
-  function searchVietnameseToEnglish(query) {
+  function searchVietnameseToEnglish(entries, query) {
     if (query.length < 2) {
       return []
     }
 
     const matches = []
 
-    for (const entry of data.entries) {
+    for (const entry of entries) {
       const matchIndex = entry.textKey.indexOf(query)
       if (matchIndex === -1) {
         continue
@@ -254,11 +290,12 @@
   function searchEntries(rawQuery) {
     const query = normalizeText(rawQuery)
     const effectiveMode = resolveMode(rawQuery)
+    const entries = state.activeDataset?.entries ?? []
 
     if (!query) {
       return {
         effectiveMode,
-        items: data.entries.slice(0, maxResults)
+        items: entries.slice(0, maxResults)
       }
     }
 
@@ -266,41 +303,118 @@
       effectiveMode,
       items:
         effectiveMode === 'vi-en'
-          ? searchVietnameseToEnglish(query)
-          : searchEnglishToVietnamese(query)
+          ? searchVietnameseToEnglish(entries, query)
+          : searchEnglishToVietnamese(entries, query)
     }
   }
 
-  function syncModeUi(effectiveMode) {
+  function syncUi(effectiveMode) {
     modeButtons.forEach((button) => {
-      button.classList.toggle('active', button.dataset.mode === selectedMode)
+      button.classList.toggle('active', button.dataset.mode === state.selectedMode)
     })
 
-    const meta = modeMeta[selectedMode]
-    searchInput.placeholder = meta.placeholder
+    sourceButtons.forEach((button) => {
+      button.classList.toggle('active', button.dataset.source === state.selectedSource)
+    })
+
+    const mode = modeMeta[state.selectedMode]
+    const source = datasetMeta[state.selectedSource]
+
+    searchInput.placeholder = mode.placeholder
     searchHint.textContent =
-      selectedMode === 'auto'
-        ? `${meta.hint} Hiện tại đang ưu tiên ${modeMeta[effectiveMode].label}.`
-        : meta.hint
+      state.selectedMode === 'auto'
+        ? `${mode.hint} Hiện tại đang ưu tiên ${modeMeta[effectiveMode].label}.`
+        : mode.hint
+    sourceHint.textContent = source.hint
   }
 
   function updateSearch() {
     const rawQuery = searchInput.value
     const { items, effectiveMode } = searchEntries(rawQuery)
-    const total = data.totalEntries.toLocaleString('vi-VN')
+    const total = state.activeDataset?.totalEntries?.toLocaleString('vi-VN') ?? '0'
 
-    syncModeUi(effectiveMode)
+    syncUi(effectiveMode)
+
+    if (!state.activeDataset) {
+      status.textContent = 'Chưa nạp bộ dữ liệu.'
+      renderEmptyState('Chưa nạp dữ liệu', 'Không tìm thấy bộ dữ liệu đã preload cho trang này.')
+      results.innerHTML = ''
+      resultCount.textContent = '0'
+      return
+    }
 
     status.textContent = rawQuery
-      ? `Đang tra ${modeMeta[effectiveMode].label}, hiển thị tối đa ${maxResults} kết quả trong ${total} mục từ.`
-      : `Sẵn sàng tra cứu ${total} mục.`
+      ? `Đang tra ${modeMeta[effectiveMode].label} trong ${state.activeDataset.label}, hiển thị tối đa ${maxResults} kết quả trên ${total} mục từ.`
+      : `Sẵn sàng tra cứu ${total} mục từ từ ${state.activeDataset.label}.`
 
     renderResults(items, rawQuery, effectiveMode)
   }
 
+  function normalizeLoadedDataset(item) {
+    const config = datasetMeta[item.key]
+    const rawData = item.data
+
+    if (!rawData || !Array.isArray(rawData.entries)) {
+      return null
+    }
+
+    for (const entry of rawData.entries) {
+      entry.originalId = entry.id
+      entry.id = `${config.key}:${entry.id}`
+      entry.sourceKey = config.key
+      entry.sourceLabel = config.shortLabel
+    }
+
+    return {
+      key: config.key,
+      label: config.label,
+      shortLabel: config.shortLabel,
+      sourceFile: rawData.sourceFile,
+      title: rawData.title,
+      author: rawData.author,
+      totalEntries: rawData.totalEntries,
+      entries: rawData.entries
+    }
+  }
+
+  function buildActiveDataset() {
+    const preloaded = Array.isArray(window.PRELOADED_DICTIONARIES) ? window.PRELOADED_DICTIONARIES : []
+    const normalized = preloaded.map(normalizeLoadedDataset).filter(Boolean)
+
+    if (!normalized.length) {
+      return null
+    }
+
+    if (state.selectedSource === 'both' && normalized.length >= 2) {
+      return {
+        key: 'both',
+        label: datasetMeta.both.label,
+        shortLabel: datasetMeta.both.shortLabel,
+        sourceFile: normalized.map((item) => item.sourceFile).join(' + '),
+        title: normalized.map((item) => item.title).join(' + '),
+        author: normalized.flatMap((item) => item.author ?? []),
+        totalEntries: normalized.reduce((sum, item) => sum + item.totalEntries, 0),
+        entries: normalized.flatMap((item) => item.entries)
+      }
+    }
+
+    return normalized[0]
+  }
+
+  sourceButtons.forEach((button) => {
+    button.addEventListener('click', function () {
+      const nextSource = button.dataset.source
+      if (nextSource === state.selectedSource) {
+        return
+      }
+
+      window.location.href = datasetMeta[nextSource].page
+    })
+  })
+
   modeButtons.forEach((button) => {
     button.addEventListener('click', function () {
-      selectedMode = button.dataset.mode
+      state.selectedMode = button.dataset.mode
       updateSearch()
       searchInput.focus()
     })
@@ -314,7 +428,16 @@
 
   searchInput.addEventListener('input', updateSearch)
 
-  status.textContent = `Đã nạp ${data.totalEntries.toLocaleString('vi-VN')} mục từ.`
-  syncModeUi('en-vi')
+  state.activeDataset = buildActiveDataset()
+  renderEmptyState('Chọn một mục để xem nghĩa', 'Nhập từ khóa ở ô tìm kiếm để bắt đầu.')
   updateSearch()
+
+  if (state.activeDataset) {
+    window.APP_BOOTSTRAP?.finish?.()
+  } else {
+    window.APP_BOOTSTRAP?.fail?.(
+      'Khong tim thay du lieu preload',
+      'Trang da mo xong nhung khong co bo tu dien hop le de khoi tao.'
+    )
+  }
 })()

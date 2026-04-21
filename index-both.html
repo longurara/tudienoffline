@@ -17,12 +17,12 @@
       <section class="search-panel">
         <label class="search-label" for="source-switch">Bộ dữ liệu</label>
         <div class="mode-switch" id="source-switch" aria-label="Bộ dữ liệu">
-          <button class="mode-button source-button active" data-source="dict1" type="button">Dictionary 1</button>
+          <button class="mode-button source-button" data-source="dict1" type="button">Dictionary 1</button>
           <button class="mode-button source-button" data-source="dict2" type="button">Dictionary 2</button>
-          <button class="mode-button source-button" data-source="both" type="button">Cả 2</button>
+          <button class="mode-button source-button active" data-source="both" type="button">Cả 2</button>
         </div>
         <p id="source-hint" class="search-hint">
-          Dictionary 1 được nạp trước để mở nhanh hơn. Bạn có thể chuyển sang bản FULL hoặc gộp cả hai khi cần.
+          Gộp cả hai bộ dữ liệu để tra cứu rộng hơn. Tùy chọn này sẽ nặng nhất.
         </p>
 
         <label class="search-label" for="search-input">Từ khóa</label>
@@ -70,18 +70,29 @@
 
     <script>
       window.APP_BOOT_CONFIG = {
-        mode: 'dict1',
+        mode: 'both',
         dictionaries: [
           {
             key: 'dict1',
             label: 'Dictionary 1',
             src: './dictionary-data.js',
-            startPercent: 14,
-            endPercent: 82,
+            startPercent: 10,
+            endPercent: 34,
             startTitle: 'Dang nap Dictionary 1',
-            startDetail: 'Ban nhe hon se mo nhanh hon, nhung trinh duyet van can thoi gian de doc va parse file du lieu.',
+            startDetail: 'Dang nap bo du lieu nhe truoc de chuan bi cho che do Ca 2.',
             endTitle: 'Da nap xong Dictionary 1',
-            endDetail: 'Du lieu co ban da vao bo nho. Dang chuan bi giao dien tra cuu.'
+            endDetail: 'Da xong bo du lieu dau tien. Dang chuyen sang bo FULL.'
+          },
+          {
+            key: 'dict2',
+            label: 'Dictionary 2',
+            src: './dictionary-data2.js',
+            startPercent: 38,
+            endPercent: 92,
+            startTitle: 'Dang nap Dictionary 2',
+            startDetail: 'Che do Ca 2 la tuy chon nang nhat. O may cham, tong thoi gian cho doi co the toi 10-15 phut hoac hon.',
+            endTitle: 'Da nap xong ca 2 bo du lieu',
+            endDetail: 'Hai bo du lieu da vao bo nho. Dang khoi tao giao dien tra cuu hop nhat.'
           }
         ]
       }

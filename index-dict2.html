@@ -17,12 +17,12 @@
       <section class="search-panel">
         <label class="search-label" for="source-switch">Bộ dữ liệu</label>
         <div class="mode-switch" id="source-switch" aria-label="Bộ dữ liệu">
-          <button class="mode-button source-button active" data-source="dict1" type="button">Dictionary 1</button>
-          <button class="mode-button source-button" data-source="dict2" type="button">Dictionary 2</button>
+          <button class="mode-button source-button" data-source="dict1" type="button">Dictionary 1</button>
+          <button class="mode-button source-button active" data-source="dict2" type="button">Dictionary 2</button>
           <button class="mode-button source-button" data-source="both" type="button">Cả 2</button>
         </div>
         <p id="source-hint" class="search-hint">
-          Dictionary 1 được nạp trước để mở nhanh hơn. Bạn có thể chuyển sang bản FULL hoặc gộp cả hai khi cần.
+          Dictionary 2 là bản FULL, nhiều mục từ hơn nhưng nặng hơn đáng kể khi mở lần đầu.
         </p>
 
         <label class="search-label" for="search-input">Từ khóa</label>
@@ -70,18 +70,18 @@
 
     <script>
       window.APP_BOOT_CONFIG = {
-        mode: 'dict1',
+        mode: 'dict2',
         dictionaries: [
           {
-            key: 'dict1',
-            label: 'Dictionary 1',
-            src: './dictionary-data.js',
-            startPercent: 14,
-            endPercent: 82,
-            startTitle: 'Dang nap Dictionary 1',
-            startDetail: 'Ban nhe hon se mo nhanh hon, nhung trinh duyet van can thoi gian de doc va parse file du lieu.',
-            endTitle: 'Da nap xong Dictionary 1',
-            endDetail: 'Du lieu co ban da vao bo nho. Dang chuan bi giao dien tra cuu.'
+            key: 'dict2',
+            label: 'Dictionary 2',
+            src: './dictionary-data2.js',
+            startPercent: 10,
+            endPercent: 90,
+            startTitle: 'Dang nap Dictionary 2',
+            startDetail: 'Day la ban FULL. Tren mot so may, buoc nay co the mat 10-15 phut de doc va parse file.',
+            endTitle: 'Da nap xong Dictionary 2',
+            endDetail: 'Bo du lieu FULL da vao bo nho. Dang khoi tao tim kiem.'
           }
         ]
       }
