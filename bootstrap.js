@@ -99,6 +99,28 @@
     })
   }
 
+  function captureManifest() {
+    const manifest = window.DICTIONARY_CHUNK_MANIFEST
+    delete window.DICTIONARY_CHUNK_MANIFEST
+
+    if (!manifest || !Array.isArray(manifest.partFiles) || !manifest.partFiles.length) {
+      throw new Error('Khong tim thay manifest chunk hop le cho bo du lieu lon.')
+    }
+
+    return manifest
+  }
+
+  function captureChunk() {
+    const chunk = window.DICTIONARY_CHUNK_DATA
+    delete window.DICTIONARY_CHUNK_DATA
+
+    if (!chunk || !Array.isArray(chunk.entries)) {
+      throw new Error('Khong tim thay chunk hop le trong qua trinh nap tu dien.')
+    }
+
+    return chunk
+  }
+
   function captureDictionary(step) {
     if (!window.DICTIONARY_DATA || !Array.isArray(window.DICTIONARY_DATA.entries)) {
       throw new Error(`Khong tim thay du lieu hop le trong ${step.src}`)
@@ -112,7 +134,64 @@
     delete window.DICTIONARY_DATA
   }
 
+  async function loadChunkedDictionary(step) {
+    setProgress(
+      step.startPercent,
+      step.startTitle || `Dang nap ${step.label}`,
+      step.startDetail || 'Trinh duyet dang chuan bi doc manifest va nap cac chunk du lieu.'
+    )
+    await nextPaint()
+    await loadScript(step.manifest)
+    const manifest = captureManifest()
+    const dataset = {
+      generatedAt: manifest.generatedAt,
+      sourceFile: manifest.sourceFile,
+      title: manifest.title,
+      author: manifest.author,
+      totalEntries: manifest.totalEntries,
+      entries: []
+    }
+
+    const totalParts = manifest.partFiles.length
+    const progressSpan = Math.max(1, step.endPercent - step.startPercent)
+
+    for (let index = 0; index < totalParts; index += 1) {
+      const partFile = manifest.partFiles[index]
+      const progress = step.startPercent + Math.floor(((index + 1) / totalParts) * progressSpan)
+
+      setProgress(
+        progress,
+        `${step.startTitle || `Dang nap ${step.label}`} (${index + 1}/${totalParts})`,
+        `Dang nap chunk ${index + 1}/${totalParts} cua ${step.label}.`
+      )
+      await nextPaint()
+      await loadScript(partFile)
+
+      const chunk = captureChunk()
+
+      for (const entry of chunk.entries) {
+        dataset.entries.push(entry)
+      }
+    }
+
+    window.PRELOADED_DICTIONARIES.push({
+      key: step.key,
+      data: dataset
+    })
+  }
+
   async function loadDictionary(step) {
+    if (step.manifest) {
+      await loadChunkedDictionary(step)
+      setProgress(
+        step.endPercent,
+        step.endTitle || `Da nap xong ${step.label}`,
+        step.endDetail || 'Da nap xong tat ca chunk cho bo du lieu nay.'
+      )
+      await nextPaint()
+      return
+    }
+
     setProgress(
       step.startPercent,
       step.startTitle || `Dang nap ${step.label}`,

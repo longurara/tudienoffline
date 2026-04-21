@@ -45,9 +45,12 @@ Neu ban muon mo nhanh va tra co ban, nen uu tien `Dictionary 1`.
 - `index-dict2.html`: trang danh cho `Dictionary 2`
 - `index-both.html`: trang danh cho ca hai bo du lieu
 - `main.js`: xu ly tim kiem, doi mode, hien thi ket qua
+- `bootstrap.js`: nap du lieu va hien trang thai loading
 - `styles.css`: giao dien
 - `dictionary-data.js`: du lieu tu dien nhe hon
-- `dictionary-data2.js`: du lieu tu dien FULL, rat lon
+- `dictionary-data2.js`: file nguon FULL truoc khi tach chunk
+- `dictionary-data2-manifest.js`: manifest cho bo FULL da tach chunk
+- `dictionary-data2_1.js`, `dictionary-data2_2.js`, ...: cac chunk cua bo FULL
 
 ## Luu y ky thuat
 
@@ -55,6 +58,7 @@ Neu ban muon mo nhanh va tra co ban, nen uu tien `Dictionary 1`.
 - Khong can backend de su dung co ban.
 - Cac file du lieu duoc sinh tu file `.prc`, khong nen sua tay.
 - Do gioi han bao mat cua `file://`, du an dung nhieu file HTML tach rieng thay vi lazy-load dong trong mot trang duy nhat.
+- `Dictionary 2` hien duoc tach thanh nhieu file chunk de de theo doi tien do va giam ap luc nap mot file JS qua lon.
 
 ## Neu gap van de
 
