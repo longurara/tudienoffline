@@ -1,0 +1,25 @@
+## Cách dùng
+
+- Mở `../index.html` để vào từ điển từ thư mục gốc.
+- Hoặc mở trực tiếp `./index.html`.
+- Không cần backend.
+- Không cần cài web server để sử dụng cơ bản.
+
+## Chức năng hiện có
+
+- Tra `Anh -> Việt`
+- Tra `Việt -> Anh`
+- Chế độ `Tự động` để tự nhận diện hướng tra
+- Chạy local trong trình duyệt
+
+## Cấu trúc file
+
+- `index.html`: khung giao diện chính
+- `styles.css`: giao diện, typography, layout
+- `main.js`: logic tìm kiếm, đổi mode tra cứu, render kết quả
+- `dictionary-data.js`: dữ liệu từ điển đã build sẵn cho trình duyệt
+
+## Lưu ý
+
+- `dictionary-data.js` là file sinh tự động từ `Anh - Viet Beta.prc`.
+- File này khá lớn, không nên sửa tay.
