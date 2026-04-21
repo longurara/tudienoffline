@@ -19,60 +19,61 @@
       label: 'Dictionary 1',
       shortLabel: 'D1',
       page: './index.html',
-      hint: 'Dictionary 1 được nạp trước để mở nhanh hơn. Phù hợp khi bạn muốn tra nhẹ và phản hồi nhanh hơn.'
+      hint: 'Dictionary 1 mo nhanh hon va phu hop khi ban muon tra nhanh tren may yeu hon.'
     },
     dict2: {
       key: 'dict2',
       label: 'Dictionary 2',
       shortLabel: 'D2',
       page: './index-dict2.html',
-      hint: 'Dictionary 2 là bản FULL, nhiều mục từ hơn nhưng nặng hơn đáng kể khi mở lần đầu.'
+      hint: 'Dictionary 2 la ban FULL. Cac chunk du lieu se duoc nap dan trong nen.'
     },
     both: {
       key: 'both',
-      label: 'Cả 2',
+      label: 'Ca 2',
       shortLabel: 'D1 + D2',
       page: './index-both.html',
-      hint: 'Gộp cả hai bộ dữ liệu để tra cứu rộng hơn. Tùy chọn này sẽ nặng nhất.'
+      hint: 'Gop ca 2 bo du lieu de tra rong hon. Neu D2 chua nap xong, ket qua se duoc bo sung dan.'
     }
   }
 
   const modeMeta = {
     auto: {
-      label: 'Tự động',
-      placeholder: 'Ví dụ: abandon, ability, sức khỏe...',
-      hint: 'Tự động nhận diện hướng tra. Gõ tiếng Anh để tìm mục từ, hoặc gõ tiếng Việt có dấu để tra ngược từ phần nghĩa và chú thích.'
+      label: 'Tu dong',
+      placeholder: 'Vi du: abandon, ability, suc khoe...',
+      hint: 'Tu dong uu tien Anh -> Viet hoac Viet -> Anh dua tren tu khoa ban vua nhap.'
     },
     'en-vi': {
-      label: 'Anh -> Việt',
-      placeholder: 'Ví dụ: abandon, acid, alert...',
-      hint: 'Ưu tiên khớp trực tiếp trên mục từ tiếng Anh, sau đó mới dò xuống phần nghĩa và ví dụ.'
+      label: 'Anh -> Viet',
+      placeholder: 'Vi du: abandon, acid, alert...',
+      hint: 'Uu tien khop truc tiep tren muc tu tieng Anh, sau do moi mo rong sang phan nghia.'
     },
     'vi-en': {
-      label: 'Việt -> Anh',
-      placeholder: 'Ví dụ: sức khỏe, phản ứng, máy bay...',
-      hint: 'Dò ngược trong phần nghĩa, chú thích và ví dụ tiếng Việt để gợi ra mục từ tiếng Anh phù hợp.'
+      label: 'Viet -> Anh',
+      placeholder: 'Vi du: suc khoe, phan ung, may bay...',
+      hint: 'Tra nguoc trong nghia, chu thich va noi dung tieng Viet cua tung muc tu.'
     }
   }
 
   const state = {
     selectedMode: 'auto',
     selectedSource: window.APP_DATASET_MODE || 'dict1',
-    activeDataset: null
+    activeDataset: null,
+    selectedEntryId: null
   }
 
   function normalizeText(value) {
-    return value
+    return String(value ?? '')
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
-      .replace(/đ/g, 'd')
-      .replace(/Đ/g, 'D')
+      .replace(/\u0111/g, 'd')
+      .replace(/\u0110/g, 'D')
       .toLowerCase()
       .trim()
   }
 
   function escapeHtml(value) {
-    return value
+    return String(value ?? '')
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -81,17 +82,20 @@
   }
 
   function stripHtml(value) {
-    return value
+    return String(value ?? '')
       .replace(/<[^>]+>/g, ' ')
       .replace(/\s+/g, ' ')
       .trim()
   }
 
   function getPlainText(entry) {
-    if (!plainTextCache.has(entry.id)) {
-      plainTextCache.set(entry.id, stripHtml(entry.html))
+    const cacheKey = entry.id || `${entry.sourceKey || 'entry'}:${entry.originalId || entry.word || 'unknown'}`
+
+    if (!plainTextCache.has(cacheKey)) {
+      plainTextCache.set(cacheKey, stripHtml(entry.html))
     }
-    return plainTextCache.get(entry.id)
+
+    return plainTextCache.get(cacheKey)
   }
 
   function highlight(value, query) {
@@ -109,22 +113,23 @@
 
     const end = start + normalizedQuery.length
     return (
-      escapeHtml(value.slice(0, start)) +
+      escapeHtml(String(value).slice(0, start)) +
       '<mark>' +
-      escapeHtml(value.slice(start, end)) +
+      escapeHtml(String(value).slice(start, end)) +
       '</mark>' +
-      escapeHtml(value.slice(end))
+      escapeHtml(String(value).slice(end))
     )
   }
 
   function buildSnippet(entry, rawQuery, effectiveMode) {
     const plain = getPlainText(entry)
+
     if (!rawQuery) {
       return plain.slice(0, 120)
     }
 
     const normalizedQuery = normalizeText(rawQuery)
-    const normalizedPlain = entry.textKey
+    const normalizedPlain = entry.textKey || ''
     let matchIndex = normalizedPlain.indexOf(normalizedQuery)
 
     if (matchIndex === -1 && effectiveMode === 'en-vi') {
@@ -137,16 +142,16 @@
 
     const start = Math.max(0, matchIndex - 40)
     const end = Math.min(plain.length, matchIndex + normalizedQuery.length + 88)
-    const prefix = start > 0 ? '…' : ''
-    const suffix = end < plain.length ? '…' : ''
+    const prefix = start > 0 ? '...' : ''
+    const suffix = end < plain.length ? '...' : ''
 
     return prefix + plain.slice(start, end).trim() + suffix
   }
 
   function renderDetail(entry) {
-    detailTitle.textContent = entry.sourceLabel ? `${entry.word} · ${entry.sourceLabel}` : entry.word
+    detailTitle.textContent = entry.sourceLabel ? `${entry.word} - ${entry.sourceLabel}` : entry.word
     detailContent.className = 'detail-content'
-    detailContent.innerHTML = entry.html
+    detailContent.innerHTML = entry.html || '<p>Khong co chi tiet cho muc nay.</p>'
   }
 
   function renderEmptyState(title, description) {
@@ -155,15 +160,32 @@
     detailContent.textContent = description
   }
 
+  function activateRenderedEntry(button, entry) {
+    results.querySelectorAll('.result-item').forEach((node) => {
+      node.classList.remove('active')
+    })
+
+    if (button) {
+      button.classList.add('active')
+    }
+
+    state.selectedEntryId = entry.id
+    renderDetail(entry)
+  }
+
   function renderResults(items, rawQuery, effectiveMode) {
     resultCount.textContent = String(items.length)
     results.innerHTML = ''
 
     if (!items.length) {
-      renderEmptyState('Chưa có kết quả', 'Thử nhập từ khóa khác hoặc đổi hướng tra cứu.')
-      results.innerHTML = '<div class="empty-results">Không tìm thấy mục phù hợp.</div>'
+      state.selectedEntryId = null
+      renderEmptyState('Chua co ket qua', 'Thu nhap tu khoa khac hoac doi huong tra cuu.')
+      results.innerHTML = '<div class="empty-results">Khong tim thay muc phu hop.</div>'
       return
     }
+
+    let firstMatch = null
+    let selectedMatch = null
 
     items.forEach((entry, index) => {
       const button = document.createElement('button')
@@ -192,26 +214,28 @@
 
       button.append(title, snippet)
       button.addEventListener('click', function () {
-        results.querySelectorAll('.result-item').forEach((node) => {
-          node.classList.remove('active')
-        })
-        button.classList.add('active')
-        renderDetail(entry)
+        activateRenderedEntry(button, entry)
       })
 
       if (index === 0) {
-        button.classList.add('active')
-        renderDetail(entry)
+        firstMatch = { button, entry }
+      }
+
+      if (entry.id === state.selectedEntryId) {
+        selectedMatch = { button, entry }
       }
 
       results.appendChild(button)
     })
+
+    const activeMatch = selectedMatch || firstMatch
+    if (activeMatch) {
+      activateRenderedEntry(activeMatch.button, activeMatch.entry)
+    }
   }
 
   function isVietnameseQuery(rawQuery) {
-    return /[ăâđêôơưáàảãạấầẩẫậắằẳẵặéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]/i.test(
-      rawQuery
-    )
+    return /[^\u0000-\u007F]/.test(String(rawQuery ?? ''))
   }
 
   function resolveMode(rawQuery) {
@@ -244,9 +268,7 @@
       }
     }
 
-    return exactWord
-      .concat(startsWith, containsWord, containsText)
-      .slice(0, maxResults)
+    return exactWord.concat(startsWith, containsWord, containsText).slice(0, maxResults)
   }
 
   function searchVietnameseToEnglish(entries, query) {
@@ -323,7 +345,7 @@
     searchInput.placeholder = mode.placeholder
     searchHint.textContent =
       state.selectedMode === 'auto'
-        ? `${mode.hint} Hiện tại đang ưu tiên ${modeMeta[effectiveMode].label}.`
+        ? `${mode.hint} Hien tai uu tien ${modeMeta[effectiveMode].label}.`
         : mode.hint
     sourceHint.textContent = source.hint
   }
@@ -332,20 +354,32 @@
     const rawQuery = searchInput.value
     const { items, effectiveMode } = searchEntries(rawQuery)
     const total = state.activeDataset?.totalEntries?.toLocaleString('vi-VN') ?? '0'
+    const loaded = state.activeDataset?.loadedEntries?.toLocaleString('vi-VN') ?? total
 
     syncUi(effectiveMode)
 
     if (!state.activeDataset) {
-      status.textContent = 'Chưa nạp bộ dữ liệu.'
-      renderEmptyState('Chưa nạp dữ liệu', 'Không tìm thấy bộ dữ liệu đã preload cho trang này.')
+      status.textContent = 'Chua nap bo du lieu.'
+      renderEmptyState('Chua nap du lieu', 'Khong tim thay bo du lieu preload cho trang nay.')
       results.innerHTML = ''
       resultCount.textContent = '0'
       return
     }
 
-    status.textContent = rawQuery
-      ? `Đang tra ${modeMeta[effectiveMode].label} trong ${state.activeDataset.label}, hiển thị tối đa ${maxResults} kết quả trên ${total} mục từ.`
-      : `Sẵn sàng tra cứu ${total} mục từ từ ${state.activeDataset.label}.`
+    if (!state.activeDataset.isComplete) {
+      const chunkLabel =
+        state.activeDataset.totalParts > 1
+          ? ` (${state.activeDataset.loadedParts}/${state.activeDataset.totalParts} chunk)`
+          : ''
+
+      status.textContent = rawQuery
+        ? `Dang tra ${modeMeta[effectiveMode].label} trong ${state.activeDataset.label}. Hien da nap ${loaded}/${total} muc tu${chunkLabel}, nen ket qua se duoc bo sung khi cac chunk con lai tiep tuc nap.`
+        : `Dang nap nen ${state.activeDataset.label}: ${loaded}/${total} muc tu${chunkLabel}. Ban co the tim ngay, ket qua se day dan khi cac chunk tiep tuc xong.`
+    } else {
+      status.textContent = rawQuery
+        ? `Dang tra ${modeMeta[effectiveMode].label} trong ${state.activeDataset.label}, hien thi toi da ${maxResults} ket qua tren ${total} muc tu.`
+        : `San sang tra cuu ${total} muc tu tu ${state.activeDataset.label}.`
+    }
 
     renderResults(items, rawQuery, effectiveMode)
   }
@@ -358,12 +392,19 @@
       return null
     }
 
-    for (const entry of rawData.entries) {
-      entry.originalId = entry.id
-      entry.id = `${config.key}:${entry.id}`
+    const normalizedCount = rawData.__normalizedCount ?? 0
+
+    for (let index = normalizedCount; index < rawData.entries.length; index += 1) {
+      const entry = rawData.entries[index]
+      const originalId = entry.originalId ?? entry.id
+
+      entry.originalId = originalId
+      entry.id = `${config.key}:${originalId}`
       entry.sourceKey = config.key
       entry.sourceLabel = config.shortLabel
     }
+
+    rawData.__normalizedCount = rawData.entries.length
 
     return {
       key: config.key,
@@ -372,8 +413,37 @@
       sourceFile: rawData.sourceFile,
       title: rawData.title,
       author: rawData.author,
-      totalEntries: rawData.totalEntries,
+      totalEntries: rawData.totalEntries ?? rawData.entries.length,
+      loadedEntries: rawData.loadedEntries ?? rawData.entries.length,
+      loadedParts: rawData.loadedParts ?? 1,
+      totalParts: rawData.totalParts ?? 1,
+      isComplete: rawData.isComplete ?? true,
       entries: rawData.entries
+    }
+  }
+
+  function buildCombinedDataset(normalized) {
+    const entries = []
+
+    for (const item of normalized) {
+      for (const entry of item.entries) {
+        entries.push(entry)
+      }
+    }
+
+    return {
+      key: 'both',
+      label: datasetMeta.both.label,
+      shortLabel: datasetMeta.both.shortLabel,
+      sourceFile: normalized.map((item) => item.sourceFile).join(' + '),
+      title: normalized.map((item) => item.title).join(' + '),
+      author: normalized.flatMap((item) => item.author ?? []),
+      totalEntries: normalized.reduce((sum, item) => sum + item.totalEntries, 0),
+      loadedEntries: normalized.reduce((sum, item) => sum + item.loadedEntries, 0),
+      loadedParts: normalized.reduce((sum, item) => sum + item.loadedParts, 0),
+      totalParts: normalized.reduce((sum, item) => sum + item.totalParts, 0),
+      isComplete: normalized.every((item) => item.isComplete),
+      entries
     }
   }
 
@@ -386,20 +456,20 @@
     }
 
     if (state.selectedSource === 'both' && normalized.length >= 2) {
-      return {
-        key: 'both',
-        label: datasetMeta.both.label,
-        shortLabel: datasetMeta.both.shortLabel,
-        sourceFile: normalized.map((item) => item.sourceFile).join(' + '),
-        title: normalized.map((item) => item.title).join(' + '),
-        author: normalized.flatMap((item) => item.author ?? []),
-        totalEntries: normalized.reduce((sum, item) => sum + item.totalEntries, 0),
-        entries: normalized.flatMap((item) => item.entries)
-      }
+      return buildCombinedDataset(normalized)
     }
 
     return normalized[0]
   }
+
+  function refreshDatasetAndUi() {
+    state.activeDataset = buildActiveDataset()
+    updateSearch()
+  }
+
+  window.addEventListener('dictionary-data-updated', function () {
+    refreshDatasetAndUi()
+  })
 
   sourceButtons.forEach((button) => {
     button.addEventListener('click', function () {
@@ -428,13 +498,10 @@
 
   searchInput.addEventListener('input', updateSearch)
 
-  state.activeDataset = buildActiveDataset()
-  renderEmptyState('Chọn một mục để xem nghĩa', 'Nhập từ khóa ở ô tìm kiếm để bắt đầu.')
-  updateSearch()
+  renderEmptyState('Chon mot muc de xem nghia', 'Nhap tu khoa o o tim kiem de bat dau.')
+  refreshDatasetAndUi()
 
-  if (state.activeDataset) {
-    window.APP_BOOTSTRAP?.finish?.()
-  } else {
+  if (!state.activeDataset) {
     window.APP_BOOTSTRAP?.fail?.(
       'Khong tim thay du lieu preload',
       'Trang da mo xong nhung khong co bo tu dien hop le de khoi tao.'

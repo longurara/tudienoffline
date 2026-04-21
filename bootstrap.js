@@ -9,6 +9,8 @@
   const overlay = createLoadingOverlay()
   let currentPercent = 0
   let animationFrameId = 0
+  let appLoadPromise = null
+  let overlayDismissed = false
 
   function clampPercent(value) {
     return Math.max(0, Math.min(100, Math.round(value)))
@@ -69,13 +71,31 @@
     setProgress(currentPercent || 100, title, detail)
   }
 
-  function finish() {
-    setProgress(100, 'San sang tra cuu', 'Tu dien da nap xong. Ban co the bat dau tim kiem.')
+  function hideOverlaySoon() {
+    if (overlayDismissed) {
+      return
+    }
+
+    overlayDismissed = true
     overlay.root.classList.add('is-done')
 
     window.setTimeout(function () {
       overlay.root.classList.add('is-hidden')
     }, 360)
+  }
+
+  function markInteractive(detail) {
+    setProgress(
+      currentPercent,
+      'Ban da co the tim kiem',
+      detail || 'Du lieu dang tiep tuc nap o nen. Ket qua se day du hon khi cac chunk con lai xong.'
+    )
+    hideOverlaySoon()
+  }
+
+  function finish() {
+    setProgress(100, 'San sang tra cuu', 'Tu dien da nap xong. Ban co the bat dau tim kiem.')
+    hideOverlaySoon()
   }
 
   async function nextPaint() {
@@ -97,6 +117,41 @@
       }
       document.body.appendChild(script)
     })
+  }
+
+  function emitDatasetUpdate(step, dataset) {
+    window.dispatchEvent(
+      new CustomEvent('dictionary-data-updated', {
+        detail: {
+          key: step.key,
+          label: step.label,
+          loadedEntries: dataset.loadedEntries ?? dataset.entries.length,
+          totalEntries: dataset.totalEntries ?? dataset.entries.length,
+          loadedParts: dataset.loadedParts ?? 1,
+          totalParts: dataset.totalParts ?? 1,
+          isComplete: Boolean(dataset.isComplete)
+        }
+      })
+    )
+  }
+
+  async function ensureAppStarted(options = {}) {
+    if (!appLoadPromise) {
+      appLoadPromise = (async function () {
+        setProgress(96, 'Dang khoi tao tra cuu', 'Dang gan du lieu vao giao dien va chuan bi o tim kiem.')
+        await nextPaint()
+        await loadScript('./main.js')
+      })()
+    }
+
+    await appLoadPromise
+
+    if (options.partial) {
+      markInteractive(options.detail)
+      return
+    }
+
+    finish()
   }
 
   function captureManifest() {
@@ -126,6 +181,11 @@
       throw new Error(`Khong tim thay du lieu hop le trong ${step.src}`)
     }
 
+    window.DICTIONARY_DATA.loadedEntries = window.DICTIONARY_DATA.entries.length
+    window.DICTIONARY_DATA.loadedParts = 1
+    window.DICTIONARY_DATA.totalParts = 1
+    window.DICTIONARY_DATA.isComplete = true
+
     window.PRELOADED_DICTIONARIES.push({
       key: step.key,
       data: window.DICTIONARY_DATA
@@ -149,8 +209,18 @@
       title: manifest.title,
       author: manifest.author,
       totalEntries: manifest.totalEntries,
+      loadedEntries: 0,
+      loadedParts: 0,
+      totalParts: manifest.totalParts,
+      isComplete: false,
       entries: []
     }
+
+    window.PRELOADED_DICTIONARIES.push({
+      key: step.key,
+      data: dataset
+    })
+    emitDatasetUpdate(step, dataset)
 
     const totalParts = manifest.partFiles.length
     const progressSpan = Math.max(1, step.endPercent - step.startPercent)
@@ -172,15 +242,24 @@
       for (const entry of chunk.entries) {
         dataset.entries.push(entry)
       }
-    }
 
-    window.PRELOADED_DICTIONARIES.push({
-      key: step.key,
-      data: dataset
-    })
+      dataset.loadedEntries = dataset.entries.length
+      dataset.loadedParts = index + 1
+      dataset.isComplete = dataset.loadedParts >= dataset.totalParts
+      emitDatasetUpdate(step, dataset)
+
+      if (dataset.loadedEntries > 0 && !overlayDismissed) {
+        await ensureAppStarted({
+          partial: !dataset.isComplete,
+          detail: 'Ban co the tim ngay tren phan du lieu da nap. Cac chunk con lai van dang tiep tuc tai.'
+        })
+      }
+
+      await nextPaint()
+    }
   }
 
-  async function loadDictionary(step) {
+  async function loadDictionary(step, options) {
     if (step.manifest) {
       await loadChunkedDictionary(step)
       setProgress(
@@ -189,6 +268,10 @@
         step.endDetail || 'Da nap xong tat ca chunk cho bo du lieu nay.'
       )
       await nextPaint()
+      await ensureAppStarted({
+        partial: Boolean(options?.hasMoreSteps),
+        detail: 'Ban co the tim kiem ngay. Cac bo du lieu khac van dang tiep tuc nap o nen.'
+      })
       return
     }
 
@@ -200,12 +283,17 @@
     await nextPaint()
     await loadScript(step.src)
     captureDictionary(step)
+    emitDatasetUpdate(step, window.PRELOADED_DICTIONARIES[window.PRELOADED_DICTIONARIES.length - 1].data)
     setProgress(
       step.endPercent,
       step.endTitle || `Da nap xong ${step.label}`,
       step.endDetail || 'Du lieu da duoc dua vao bo nho. Dang chuyen sang buoc tiep theo.'
     )
     await nextPaint()
+    await ensureAppStarted({
+      partial: Boolean(options?.hasMoreSteps),
+      detail: 'Ban co the tim kiem ngay. Cac bo du lieu khac van dang tiep tuc nap o nen.'
+    })
   }
 
   window.APP_BOOTSTRAP = {
@@ -227,13 +315,14 @@
     )
     await nextPaint()
 
-    for (const step of dictionaries) {
-      await loadDictionary(step)
+    for (let index = 0; index < dictionaries.length; index += 1) {
+      const step = dictionaries[index]
+      await loadDictionary(step, {
+        hasMoreSteps: index < dictionaries.length - 1
+      })
     }
 
-    setProgress(96, 'Dang khoi tao tra cuu', 'Dang gan du lieu vao giao dien va chuan bi o tim kiem.')
-    await nextPaint()
-    await loadScript('./main.js')
+    await ensureAppStarted({ partial: false })
   }
 
   function createLoadingOverlay() {
