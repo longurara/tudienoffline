@@ -1,6 +1,6 @@
 ## Cách dùng
 
--Clone về và mở file 'index.html'
+-Clone về và mở file `index.html`
 
 ## Chức năng hiện có
 
