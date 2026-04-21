@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Từ điển Anh - Việt Offline</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero">
+        <p class="eyebrow">Offline Dictionary</p>
+        <h1>Từ điển Anh - Việt</h1>
+      </section>
+
+      <section class="search-panel">
+        <label class="search-label" for="search-input">Từ khóa</label>
+        <div class="mode-switch" id="mode-switch" aria-label="Hướng tra cứu">
+          <button class="mode-button active" data-mode="auto" type="button">Tự động</button>
+          <button class="mode-button" data-mode="en-vi" type="button">Anh -> Việt</button>
+          <button class="mode-button" data-mode="vi-en" type="button">Việt -> Anh</button>
+        </div>
+        <p id="search-hint" class="search-hint">
+          Tự động nhận diện hướng tra. Gõ tiếng Anh để tìm mục từ, hoặc gõ tiếng Việt có dấu để tra ngược từ phần nghĩa và chú thích.
+        </p>
+        <div class="search-row">
+          <input
+            id="search-input"
+            class="search-input"
+            type="search"
+            placeholder="Ví dụ: abandon, ability, sức khỏe..."
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <button id="clear-button" class="ghost-button" type="button">Xóa</button>
+        </div>
+        <p id="status" class="status-text">Đang nạp dữ liệu...</p>
+      </section>
+
+      <section class="content-grid">
+        <aside class="results-panel">
+          <div class="panel-header">
+            <h2>Kết quả</h2>
+            <span id="result-count" class="count-pill">0</span>
+          </div>
+          <div id="results" class="results-list"></div>
+        </aside>
+
+        <article class="detail-panel">
+          <div class="panel-header">
+            <h2 id="detail-title">Chọn một mục để xem nghĩa</h2>
+          </div>
+          <div id="detail-content" class="detail-content empty-state">
+            Nhập từ khóa ở ô tìm kiếm để bắt đầu.
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script src="./dictionary-data.js"></script>
+    <script src="./main.js"></script>
+  </body>
+</html>
