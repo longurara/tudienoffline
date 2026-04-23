@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dich Anh - Viet trong trinh duyet</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero">
+        <p class="eyebrow">Browser Translation</p>
+        <h1>Dich Anh - Viet trong trinh duyet</h1>
+        <p class="hero-copy">
+          Trang nay dung model web-ready de dich EN -> VI va VI -> EN ngay trong browser.
+          Ban co the dan nhieu doan van ban. Trang se tu tach thanh nhieu phan ngan hon de dich lan luot.
+          Lan dau co the can internet de tai model. Nhung sau do, trinh duyet se co gang cache lai de
+          lan sau nhanh hon.
+        </p>
+        <div class="hero-links">
+          <a class="hero-link" href="./index.html">Dictionary 1</a>
+          <a class="hero-link" href="./index-dict2.html">Dictionary 2</a>
+          <a class="hero-link" href="./index-both.html">Ca 2</a>
+          <a class="hero-link active" href="./index-translate.html">Translate AI</a>
+        </div>
+      </section>
+
+      <section class="search-panel">
+        <label class="search-label" for="translate-direction">Huong dich</label>
+        <div class="mode-switch" id="translate-direction" aria-label="Huong dich">
+          <button class="mode-button active" data-direction="en-vi" type="button">English -> Vietnamese</button>
+          <button class="mode-button" data-direction="vi-en" type="button">Vietnamese -> English</button>
+        </div>
+        <p id="translate-hint" class="search-hint">
+          Nhap mot hoac nhieu doan tieng Anh roi bam Dich. Trang se tu tach doan dai va them target token >>vie<< cho model EN -> VI.
+        </p>
+        <div class="translate-actions">
+          <button id="translate-button" class="ghost-button translate-primary" type="button">Dich</button>
+          <button id="swap-button" class="ghost-button" type="button">Dao chieu</button>
+          <button id="fill-sample-button" class="ghost-button" type="button">Vi du</button>
+          <button id="clear-translation-button" class="ghost-button" type="button">Xoa</button>
+        </div>
+        <p id="translate-status" class="status-text">
+          San sang. Ban co the dan nhieu doan van ban. Lan dau mo trang co the can internet de tai model translation vao browser.
+        </p>
+      </section>
+
+      <section class="translate-grid">
+        <article class="translate-panel">
+          <div class="panel-header">
+            <h2 id="source-panel-title">Nhap cau tieng Anh</h2>
+            <span id="input-char-count" class="count-pill">0</span>
+          </div>
+          <div class="translate-panel-body">
+            <textarea
+              id="source-text"
+              class="translate-textarea"
+              placeholder="Vi du: Technology helps people learn faster when the tools are easy to use."
+              spellcheck="false"
+            ></textarea>
+          </div>
+        </article>
+
+        <article class="translate-panel">
+          <div class="panel-header">
+            <h2>Ban dich</h2>
+            <button id="copy-button" class="ghost-button" type="button" disabled>Copy</button>
+          </div>
+          <div class="translate-panel-body">
+            <div id="translated-text" class="translate-output empty-state">
+              Ban dich se hien o day sau khi ban bam Dich.
+            </div>
+            <p id="translate-meta" class="translate-meta">Model: Xenova/opus-mt-en-vi</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="search-panel">
+        <p class="search-hint translate-note">
+          Meo: bam <strong>Ctrl + Enter</strong> de dich nhanh. Trang nay co the xu ly nhieu doan bang cach
+          tu tach cau va dich lan luot. Model se duoc tai tu nguon web-ready trong lan dau ban su dung.
+        </p>
+      </section>
+    </main>
+
+    <script src="./translation.bundle.js"></script>
+  </body>
+</html>

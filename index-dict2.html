@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Từ điển Anh - Việt Offline</title>
+    <title>Tu dien Anh - Viet Offline</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="./styles.css">
   </head>
@@ -11,47 +11,53 @@
     <main class="app-shell">
       <section class="hero">
         <p class="eyebrow">Offline Dictionary</p>
-        <h1>Từ điển Anh - Việt</h1>
+        <h1>Tu dien Anh - Viet</h1>
+        <div class="hero-links">
+          <a class="hero-link" href="./index.html">Dictionary 1</a>
+          <a class="hero-link active" href="./index-dict2.html">Dictionary 2</a>
+          <a class="hero-link" href="./index-both.html">Ca 2</a>
+          <a class="hero-link" href="./index-translate.html">Translate AI</a>
+        </div>
       </section>
 
       <section class="search-panel">
-        <label class="search-label" for="source-switch">Bộ dữ liệu</label>
-        <div class="mode-switch" id="source-switch" aria-label="Bộ dữ liệu">
+        <label class="search-label" for="source-switch">Bo du lieu</label>
+        <div class="mode-switch" id="source-switch" aria-label="Bo du lieu">
           <button class="mode-button source-button" data-source="dict1" type="button">Dictionary 1</button>
           <button class="mode-button source-button active" data-source="dict2" type="button">Dictionary 2</button>
-          <button class="mode-button source-button" data-source="both" type="button">Cả 2</button>
+          <button class="mode-button source-button" data-source="both" type="button">Ca 2</button>
         </div>
         <p id="source-hint" class="search-hint">
-          Dictionary 2 là bản FULL, nhiều mục từ hơn nhưng nặng hơn đáng kể khi mở lần đầu.
+          Dictionary 2 la ban FULL, nhieu muc tu hon nhung nang hon dang ke khi mo lan dau.
         </p>
 
-        <label class="search-label" for="search-input">Từ khóa</label>
-        <div class="mode-switch" id="mode-switch" aria-label="Hướng tra cứu">
-          <button class="mode-button active" data-mode="auto" type="button">Tự động</button>
-          <button class="mode-button" data-mode="en-vi" type="button">Anh -> Việt</button>
-          <button class="mode-button" data-mode="vi-en" type="button">Việt -> Anh</button>
+        <label class="search-label" for="search-input">Tu khoa</label>
+        <div class="mode-switch" id="mode-switch" aria-label="Huong tra cuu">
+          <button class="mode-button active" data-mode="auto" type="button">Tu dong</button>
+          <button class="mode-button" data-mode="en-vi" type="button">Anh -> Viet</button>
+          <button class="mode-button" data-mode="vi-en" type="button">Viet -> Anh</button>
         </div>
         <p id="search-hint" class="search-hint">
-          Tự động nhận diện hướng tra. Gõ tiếng Anh để tìm mục từ, hoặc gõ tiếng Việt có dấu để tra ngược từ phần nghĩa và chú thích.
+          Tu dong nhan dien huong tra. Go tieng Anh de tim muc tu, hoac go tieng Viet co dau de tra nguoc tu phan nghia va chu thich.
         </p>
         <div class="search-row">
           <input
             id="search-input"
             class="search-input"
             type="search"
-            placeholder="Ví dụ: abandon, ability, sức khỏe..."
+            placeholder="Vi du: abandon, ability, suc khoe..."
             autocomplete="off"
             spellcheck="false"
           >
-          <button id="clear-button" class="ghost-button" type="button">Xóa</button>
+          <button id="clear-button" class="ghost-button" type="button">Xoa</button>
         </div>
-        <p id="status" class="status-text">Đang nạp dữ liệu...</p>
+        <p id="status" class="status-text">Dang nap du lieu...</p>
       </section>
 
       <section class="content-grid">
         <aside class="results-panel">
           <div class="panel-header">
-            <h2>Kết quả</h2>
+            <h2>Ket qua</h2>
             <span id="result-count" class="count-pill">0</span>
           </div>
           <div id="results" class="results-list"></div>
@@ -59,10 +65,10 @@
 
         <article class="detail-panel">
           <div class="panel-header">
-            <h2 id="detail-title">Chọn một mục để xem nghĩa</h2>
+            <h2 id="detail-title">Chon mot muc de xem nghia</h2>
           </div>
           <div id="detail-content" class="detail-content empty-state">
-            Nhập từ khóa ở ô tìm kiếm để bắt đầu.
+            Nhap tu khoa o o tim kiem de bat dau.
           </div>
         </article>
       </section>
