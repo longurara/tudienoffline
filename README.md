@@ -66,3 +66,12 @@ Nếu bạn muốn mở nhanh và tra cơ bản, nên ưu tiên `Dictionary 1`.
 * Nếu mở lâu, hãy chờ thêm, đặc biệt với `Dictionary 2` và `Cả 2`.
 * Nếu trình duyệt bị treo quá lâu, thử đóng lại và mở bản `Dictionary 1` trước.
 * Nếu chữ hiển thị bị vỡ dấu hoặc tách ký tự, thử đóng tab cũ rồi mở lại file `index.html`.
+
+## Cảnh báo quan trọng
+
+* Nhánh `main` là bản từ điển offline cơ bản, không tích hợp AI.
+* Tính năng tích hợp AI hiện nằm ở nhánh `AI-intergation`.
+* Nếu muốn dùng hoặc thử nghiệm tính năng AI, hãy chuyển sang nhánh `AI-intergation` trước.
+* Nhánh AI cần kết nối mạng để tải cache, hoặc các thiết lập riêng tùy phiên bản.
+* Nếu chỉ muốn dùng từ điển offline không cần mạng, hãy tiếp tục dùng nhánh `main`.
+* Lưu ý tác giả không chịu trách nhiệm phát sinh trong `quá trình dùng phần mềm`.
