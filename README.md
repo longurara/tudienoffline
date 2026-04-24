@@ -66,3 +66,6 @@ Nếu bạn muốn mở nhanh và tra cơ bản, nên ưu tiên `Dictionary 1`.
 * Nếu mở lâu, hãy chờ thêm, đặc biệt với `Dictionary 2` và `Cả 2`.
 * Nếu trình duyệt bị treo quá lâu, thử đóng lại và mở bản `Dictionary 1` trước.
 * Nếu chữ hiển thị bị vỡ dấu hoặc tách ký tự, thử đóng tab cũ rồi mở lại file `index.html`.
+
+
+chrome://flags/#force-high-performance-gpu

@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Swe202c.pdf</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main id="chat-decoy" class="app-shell chat-decoy-shell" aria-hidden="false">
+      <article class="decoy-paper">
+        <p class="decoy-kicker">Software Engineering Notes</p>
+        <h1>Agile và Waterfall</h1>
+
+        <section class="decoy-section">
+          <h2>1. Agile là gì?</h2>
+          <p>
+            Agile là mô hình phát triển phần mềm theo kiểu lặp và tăng dần. Tức là không đợi làm xong
+            toàn bộ hệ thống mới giao, mà chia dự án thành nhiều phần nhỏ, làm từng đợt, mỗi đợt đều
+            có sản phẩm để review và lấy feedback.
+          </p>
+          <h3>Đặc điểm chính của Agile</h3>
+          <ul>
+            <li>Phát triển theo iteration / sprint.</li>
+            <li>Làm từng chức năng nhỏ trước.</li>
+            <li>Stakeholder feedback thường xuyên.</li>
+            <li>Dễ thay đổi yêu cầu.</li>
+            <li>Test, sửa và cải tiến liên tục.</li>
+          </ul>
+          <h3>Agile hoạt động như thế nào?</h3>
+          <p>Ví dụ với Course Registration System (CRS):</p>
+          <ul>
+            <li>Sprint 1: login + xem course catalogue.</li>
+            <li>Sprint 2: check prerequisite + register course.</li>
+            <li>Sprint 3: waitlist + notification.</li>
+            <li>Sprint 4: grade management + reports.</li>
+          </ul>
+          <p>
+            Sau mỗi sprint, team demo cho stakeholder, nhận góp ý, sửa requirement nếu cần và tiếp tục
+            sprint sau.
+          </p>
+          <h3>Ưu điểm của Agile</h3>
+          <ol>
+            <li>Linh hoạt với thay đổi, ví dụ khi trường đổi policy đăng ký môn.</li>
+            <li>Có feedback thường xuyên từ admin, lecturer và student.</li>
+            <li>Giảm rủi ro vì performance, security và usability được phát hiện sớm.</li>
+            <li>Giao hàng sớm, không cần chờ toàn bộ hệ thống hoàn thành.</li>
+          </ol>
+          <h3>Nhược điểm của Agile</h3>
+          <ol>
+            <li>Khó quản lý nếu team thiếu kinh nghiệm.</li>
+            <li>Yêu cầu stakeholder tham gia thường xuyên.</li>
+            <li>Khó dự đoán toàn bộ chi phí và thời gian từ đầu.</li>
+            <li>Tài liệu có thể không chi tiết bằng Waterfall nếu team bỏ qua documentation.</li>
+          </ol>
+        </section>
+
+        <section class="decoy-section">
+          <h2>2. Waterfall là gì?</h2>
+          <p>
+            Waterfall là mô hình phát triển tuần tự theo từng giai đoạn. Mỗi giai đoạn phải làm xong
+            rồi mới chuyển sang giai đoạn tiếp theo.
+          </p>
+          <ol>
+            <li>Requirements</li>
+            <li>Analysis</li>
+            <li>Design</li>
+            <li>Implementation</li>
+            <li>Testing</li>
+            <li>Deployment / Maintenance</li>
+          </ol>
+          <h3>Đặc điểm chính của Waterfall</h3>
+          <ul>
+            <li>Đi theo trình tự cố định.</li>
+            <li>Yêu cầu cần rõ từ đầu.</li>
+            <li>Mỗi phase có tài liệu rõ ràng.</li>
+            <li>Ít quay lại sửa phase trước.</li>
+          </ul>
+          <h3>Ưu điểm của Waterfall</h3>
+          <ol>
+            <li>Dễ quản lý vì mỗi giai đoạn rõ ràng.</li>
+            <li>Tài liệu đầy đủ, hợp với môi trường formal như trường đại học.</li>
+            <li>Dễ ước lượng thời gian và chi phí hơn.</li>
+            <li>Phù hợp khi requirement ổn định.</li>
+          </ol>
+          <h3>Nhược điểm của Waterfall</h3>
+          <ol>
+            <li>Khó thích ứng khi requirement thay đổi.</li>
+            <li>Feedback đến muộn vì user chỉ thấy hệ thống khi gần xong.</li>
+            <li>Rủi ro phát hiện lỗi muộn ở giai đoạn testing.</li>
+            <li>Không phù hợp với dự án cần iterative delivery.</li>
+          </ol>
+        </section>
+
+        <section class="decoy-section">
+          <h2>3. So sánh Agile và Waterfall</h2>
+          <div class="decoy-table-wrap">
+            <table class="decoy-table">
+              <thead>
+                <tr>
+                  <th>Tiêu chí</th>
+                  <th>Agile</th>
+                  <th>Waterfall</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Requirements</td>
+                  <td>Chấp nhận requirement thay đổi.</td>
+                  <td>Cần requirement rõ và ổn định ngay từ đầu.</td>
+                </tr>
+                <tr>
+                  <td>Feedback</td>
+                  <td>Có feedback liên tục.</td>
+                  <td>Feedback thường đến muộn.</td>
+                </tr>
+                <tr>
+                  <td>Rủi ro</td>
+                  <td>Phát hiện sớm qua từng iteration.</td>
+                  <td>Dễ phát hiện muộn ở cuối dự án.</td>
+                </tr>
+                <tr>
+                  <td>Quản lý</td>
+                  <td>Linh hoạt nhưng khó quản lý hơn.</td>
+                  <td>Dễ quản lý, quy trình rõ ràng hơn.</td>
+                </tr>
+                <tr>
+                  <td>Tài liệu</td>
+                  <td>Có thể ít formal hơn.</td>
+                  <td>Documentation mạnh hơn.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="decoy-section">
+          <h2>4. Model nào hợp hơn cho CRS?</h2>
+          <p>
+            Với Course Registration System, Agile thường phù hợp hơn vì hệ thống có nhiều nhóm người
+            dùng như student, lecturer, academic staff và system admin. Hệ thống cũng có nhiều chức năng
+            tương tác phức tạp như register course, waitlist, grade release và reports.
+          </p>
+          <p>
+            Agile giúp xử lý tốt hơn các rủi ro về concurrent-user load, security, availability và các
+            thay đổi yêu cầu thực tế từ trường trong quá trình phát triển.
+          </p>
+          <blockquote>
+            Agile is more appropriate for the CRS because it supports iterative delivery, continuous
+            stakeholder feedback, and early handling of technical risks such as performance and security.
+          </blockquote>
+        </section>
+
+        <section class="decoy-section">
+          <h2>5. Câu viết mẫu ngắn</h2>
+          <p>
+            <strong>Agile:</strong> Agile is an iterative and incremental software development model in
+            which the system is developed in small releases. It emphasizes continuous stakeholder feedback,
+            adaptability to change, and frequent testing throughout the project.
+          </p>
+          <p>
+            <strong>Waterfall:</strong> Waterfall is a linear and sequential software development model
+            where each phase must be completed before moving to the next. It works best when requirements
+            are clear, stable, and unlikely to change.
+          </p>
+          <p>
+            <strong>Comparison:</strong> Agile is more flexible and better suited to evolving requirements,
+            while Waterfall provides stronger structure and documentation but is less adaptable to change.
+          </p>
+        </section>
+
+        <section class="decoy-section">
+          <h2>6. Mẹo nhớ nhanh</h2>
+          <ul>
+            <li>Agile = chia nhỏ, làm dần, sửa linh hoạt.</li>
+            <li>Waterfall = làm tuần tự, rõ bước, khó đổi.</li>
+          </ul>
+          <p>
+            <strong>Kết luận:</strong> Therefore, Agile is more appropriate for the CRS project as it
+            allows iterative development, continuous feedback, and better handling of risks such as
+            performance, security, and changing requirements, while Waterfall is less suitable due to its
+            rigid structure.
+          </p>
+        </section>
+      </article>
+    </main>
+
+    <main id="chat-ai-app" class="app-shell chat-ai-app" hidden aria-hidden="true">
+      <section class="hero">
+        <div class="hero-links">
+          <a class="hero-link" href="./index.html">Dictionary 1</a>
+          <a class="hero-link" href="./index-dict2.html">Dictionary 2</a>
+          <a class="hero-link" href="./index-both.html">Ca 2</a>
+          <a class="hero-link" href="./index-translate.html">Translate</a>
+          <a class="hero-link active" href="./index-swe202c.html">AI Chat</a>
+        </div>
+      </section>
+
+      <section class="search-panel">
+        <div class="chat-toolbar">
+          <div class="chat-field">
+            <label class="search-label" for="chat-model-select"></label>
+            <select id="chat-model-select" class="chat-select"></select>
+          </div>
+          <div class="translate-actions">
+            <button id="load-model-button" class="ghost-button translate-primary" type="button">Nap model</button>
+            <button id="new-chat-button" class="ghost-button" type="button">Chat moi</button>
+            <button id="stop-chat-button" class="ghost-button" type="button">Dung</button>
+            <button
+              id="toggle-chat-side-panel-button"
+              class="ghost-button"
+              type="button"
+              aria-controls="chat-side-panel"
+              aria-expanded="true"
+            >An thong tin</button>
+          </div>
+        </div>
+        <p id="chat-status" class="status-text">
+          San sang. Chon mot model WebLLM roi bam Nap model. Lan dau can internet de tai model vao cache cua browser.
+        </p>
+      </section>
+
+      <section id="chat-layout" class="chat-layout">
+        <aside id="chat-side-panel" class="translate-panel chat-side-panel">
+          <div class="panel-header">
+            <h2>Thong tin model</h2>
+            <span id="chat-model-badge" class="count-pill">Idle</span>
+          </div>
+          <div class="chat-panel-body">
+            <div class="chat-model-card">
+              <p id="chat-model-summary" class="chat-model-summary"></p>
+              <div id="chat-model-risk-banner" class="chat-risk-banner" hidden></div>
+              <div class="chat-metrics">
+                <div class="chat-metric">
+                  <span class="chat-metric-label">Approx VRAM</span>
+                  <strong id="chat-model-memory">-</strong>
+                </div>
+                <div class="chat-metric">
+                  <span class="chat-metric-label">Max Context</span>
+                  <strong id="chat-model-context">-</strong>
+                </div>
+                <div class="chat-metric">
+                  <span class="chat-metric-label">Low Resource</span>
+                  <strong id="chat-model-low-resource">-</strong>
+                </div>
+                <div class="chat-metric">
+                  <span class="chat-metric-label">Extra Features</span>
+                  <strong id="chat-model-features">-</strong>
+                </div>
+              </div>
+              <p id="chat-model-status-note" class="chat-model-status-note"></p>
+            </div>
+
+            <div class="chat-field">
+              <label class="search-label" for="chat-context-window-input">Context window</label>
+              <div class="chat-context-row">
+                <input
+                  id="chat-context-window-input"
+                  class="chat-select chat-number-input"
+                  type="number"
+                  min="256"
+                  step="1"
+                  inputmode="numeric"
+                >
+                <button id="reset-context-window-button" class="ghost-button" type="button">Mac dinh</button>
+              </div>
+              <p id="chat-context-help" class="chat-context-help">
+                Context lon hon giup ghi nho cuoc hoi thoai dai hon, nhung tang RAM va thoi gian nap model.
+              </p>
+            </div>
+
+            <div class="chat-field chat-toggle-field">
+              <label class="chat-toggle-row" for="chat-thinking-toggle">
+                <input id="chat-thinking-toggle" type="checkbox">
+                <span>
+                  <strong>Think mode</strong>
+                  <small>Cho model suy luan noi bo neu model ho tro.</small>
+                </span>
+              </label>
+              <p id="chat-thinking-help" class="chat-context-help">
+                Model nay khong co che do thinking rieng trong WebLLM.
+              </p>
+            </div>
+
+            <div class="chat-field chat-cache-panel">
+              <div class="chat-cache-header">
+                <div>
+                  <label class="search-label" for="chat-cache-list">Model cache</label>
+                  <p class="chat-context-help">
+                    Xoa model da tai de giai phong dung luong. Lan nap tiep theo se can internet de tai lai.
+                  </p>
+                </div>
+                <button id="refresh-cache-button" class="ghost-button" type="button">Quet cache</button>
+              </div>
+              <div id="chat-cache-list" class="chat-cache-list" aria-live="polite"></div>
+              <div class="translate-actions chat-cache-actions">
+                <button id="delete-selected-cache-button" class="ghost-button chat-danger-button" type="button">
+                  Xoa model da chon
+                </button>
+              </div>
+              <p id="chat-cache-status" class="chat-context-help chat-cache-status"></p>
+            </div>
+
+            <label class="search-label" for="chat-system-prompt">System prompt</label>
+            <textarea
+              id="chat-system-prompt"
+              class="translate-textarea chat-system-textarea"
+              spellcheck="false"
+            ></textarea>
+
+            <div class="chat-suggestions">
+              <button class="chat-chip" data-chat-suggestion="Giai thich tu &quot;abandon&quot; bang tieng Viet, co 3 vi du ngan." type="button">Tu vung</button>
+              <button class="chat-chip" data-chat-suggestion="Tom tat doan van tieng Anh sau theo cach de hieu." type="button">Tom tat</button>
+              <button class="chat-chip" data-chat-suggestion="Tao 5 cau hoi de on tu vung ve chu de cong nghe." type="button">On tap</button>
+              <button class="chat-chip" data-chat-suggestion="Dich va giai thich su khac nhau giua &quot;ability&quot; va &quot;capability&quot;." type="button">Phan biet</button>
+            </div>
+
+            <p class="search-hint translate-note">
+              Goi y model offline sau lan tai dau:
+              <strong>Llama 3.2 1B</strong>,
+              <strong>Qwen2 0.5B</strong>,
+              <strong>Qwen2 1.5B</strong>,
+              <strong>Llama 3.2 3B</strong>.
+              Neu can hoi thoai dai hon, thu nhom
+              <strong>Long Context Experimental</strong>
+              voi
+              <strong>SmolLM2 1.7B Long 8K</strong>,
+              <strong>Qwen2.5 3B Long 8K</strong>,
+              <strong>Qwen3 4B Long 8K</strong>,
+              hoac
+              <strong>Llama 3 8B Long 8K</strong>.
+              Muon thu 16K thi chon nhom
+              <strong>Long Context 16K Experimental</strong>
+              voi
+              <strong>Phi 3.5 Mini Long 16K</strong>,
+              <strong>Mistral 7B Long 16K</strong>,
+              <strong>Qwen2.5 7B Long 16K</strong>,
+              hoac
+              <strong>Qwen3 8B Long 16K</strong>.
+              Doi `context window` se can nap lai model.
+            </p>
+          </div>
+        </aside>
+
+        <section class="translate-panel chat-main-panel">
+          <div class="panel-header">
+            <h2>Hoi thoai</h2>
+            <span id="chat-message-count" class="count-pill">0</span>
+          </div>
+
+          <div id="chat-messages" class="chat-messages"></div>
+
+          <div class="chat-composer">
+            <div class="chat-composer-header">
+              <label class="search-label" for="chat-input">Tin nhan</label>
+              <span id="chat-prompt-count" class="chat-count">0</span>
+            </div>
+            <textarea
+              id="chat-input"
+              class="translate-textarea chat-input-textarea"
+              placeholder="Hoi bang tieng Viet hoac tieng Anh. Enter de gui, Shift + Enter de xuong dong."
+              spellcheck="false"
+            ></textarea>
+            <div class="chat-composer-actions">
+              <p id="chat-runtime-meta" class="chat-runtime-meta">
+                Model chua duoc nap. Lan dau can internet de tai model vao cache cua browser.
+              </p>
+              <div class="translate-actions">
+                <button id="clear-chat-input-button" class="ghost-button" type="button">Xoa o nhap</button>
+                <button id="chat-send-button" class="ghost-button translate-primary" type="button">Gui</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="./chat.bundle.js"></script>
+  </body>
+</html>
