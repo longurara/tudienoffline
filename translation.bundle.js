@@ -33162,11 +33162,10 @@ ${fake_token_around_image}${global_img_token}` + image_token.repeat(image_seq_le
   // scripts/translate-page-entry.mjs
   env2.allowLocalModels = false;
   env2.allowRemoteModels = true;
-  env2.backends.onnx.wasm.numThreads = 1;
-  env2.backends.onnx.logLevel = "error";
+  env2.logLevel = "error";
   var PIPELINE_RUNTIME_OPTIONS = {
     device: "wasm",
-    dtype: "q8"
+    dtype: "fp32"
   };
   var SILENCED_WARNING_PATTERNS = [
     "Unable to determine content-length from response headers. Will expand buffer when needed.",
@@ -33301,7 +33300,7 @@ ${fake_token_around_image}${global_img_token}` + image_token.repeat(image_seq_le
     sourcePanelTitle.textContent = meta.inputLabel;
     sourceText.placeholder = meta.placeholder;
     translateHint.textContent = meta.hint;
-    translateMeta.textContent = `Model: ${meta.modelId} | Runtime: wasm / q8`;
+    translateMeta.textContent = `Model: ${meta.modelId} | Runtime: wasm / fp32`;
   }
   function updateCharCount() {
     charCount.textContent = String(sourceText.value.length);
