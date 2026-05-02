@@ -6865,8 +6865,8 @@
      */
     post_process(tokens, tokens_pair = null, add_special_tokens = true) {
       let processed_tokens = { tokens, tokens_pair };
-      for (const processor of this.processors) {
-        processed_tokens = processor.post_process(
+      for (const processor2 of this.processors) {
+        processed_tokens = processor2.post_process(
           processed_tokens.tokens,
           processed_tokens.tokens_pair,
           add_special_tokens
@@ -23068,8 +23068,8 @@ ${fake_token_around_image}${global_img_token}` + image_token.repeat(image_seq_le
      */
     _call(input_ids, logits) {
       let toReturn = logits;
-      for (const processor of this.processors) {
-        toReturn = processor(input_ids, toReturn);
+      for (const processor2 of this.processors) {
+        toReturn = processor2(input_ids, toReturn);
       }
       return toReturn;
     }
@@ -24337,10 +24337,6 @@ ${fake_token_around_image}${global_img_token}` + image_token.repeat(image_seq_le
       sessions: (config, options) => ({ model: options.model_file_name ?? "model" })
     }
   };
-  function getTextOnlySessions(modelType) {
-    const typeConfig = MODEL_SESSION_CONFIG[modelType];
-    return typeConfig?.text_only_sessions ?? null;
-  }
   function getSessionsConfig(modelType, config, options = {}) {
     const typeConfig = MODEL_SESSION_CONFIG[modelType] ?? MODEL_SESSION_CONFIG.default;
     return {
@@ -29893,12 +29889,12 @@ ${fake_token_around_image}${global_img_token}` + image_token.repeat(image_seq_le
   var CONV1_LEFT_PAD = 2;
   var CONV2_LEFT_PAD = 1;
   var states = /* @__PURE__ */ new WeakMap();
-  function createEncoderState(model, input_features) {
+  function createEncoderState(model2, input_features) {
     const { text_config, audio_config } = (
       /** @type {any} */
-      model.config
+      model2.config
     );
-    const encoder_session = model.sessions["audio_encoder"];
+    const encoder_session = model2.sessions["audio_encoder"];
     const { num_mel_bins, hidden_size: enc_hidden_size } = audio_config;
     const PADDING_CACHE_CHANNELS = num_mel_bins + enc_hidden_size;
     const enc_kv_cache = new DynamicCache();
@@ -31229,9 +31225,9 @@ ${fake_token_around_image}${global_img_token}` + image_token.repeat(image_seq_le
   for (const [mappings, type] of MODEL_CLASS_TYPE_MAPPING) {
     for (const name of mappings.values()) {
       MODEL_TYPE_MAPPING.set(name, type);
-      const model = models_exports[name];
-      MODEL_CLASS_TO_NAME_MAPPING.set(model, name);
-      MODEL_NAME_TO_CLASS_MAPPING.set(name, model);
+      const model2 = models_exports[name];
+      MODEL_CLASS_TO_NAME_MAPPING.set(model2, name);
+      MODEL_NAME_TO_CLASS_MAPPING.set(name, model2);
     }
   }
   var CUSTOM_MAPPING = [
@@ -31268,10 +31264,10 @@ ${fake_token_around_image}${global_img_token}` + image_token.repeat(image_seq_le
       MODEL_TYPES.VoxtralRealtime
     ]
   ];
-  for (const [name, model, type] of CUSTOM_MAPPING) {
+  for (const [name, model2, type] of CUSTOM_MAPPING) {
     MODEL_TYPE_MAPPING.set(name, type);
-    MODEL_CLASS_TO_NAME_MAPPING.set(model, name);
-    MODEL_NAME_TO_CLASS_MAPPING.set(name, model);
+    MODEL_CLASS_TO_NAME_MAPPING.set(model2, name);
+    MODEL_NAME_TO_CLASS_MAPPING.set(name, model2);
   }
   var CUSTOM_ARCHITECTURES_MAPPING = /* @__PURE__ */ new Map([
     ["modnet", MODEL_FOR_IMAGE_SEGMENTATION_MAPPING_NAMES],
@@ -31529,12 +31525,12 @@ ${fake_token_around_image}${global_img_token}` + image_token.repeat(image_seq_le
      * @param {PreTrainedTokenizer} [options.tokenizer=null] The tokenizer used by the pipeline (if any).
      * @param {Processor} [options.processor=null] The processor used by the pipeline (if any).
      */
-    constructor({ task, model, tokenizer = null, processor = null }) {
+    constructor({ task, model: model2, tokenizer = null, processor: processor2 = null }) {
       super();
       this.task = task;
-      this.model = model;
+      this.model = model2;
       this.tokenizer = tokenizer;
-      this.processor = processor;
+      this.processor = processor2;
     }
     /** @type {DisposeType} */
     async dispose() {
@@ -33016,654 +33012,872 @@ ${fake_token_around_image}${global_img_token}` + image_token.repeat(image_seq_le
     // Add for backwards compatibility
     embeddings: "feature-extraction"
   });
-  async function get_processor_files(modelId) {
-    if (!modelId) {
-      throw new Error("modelId is required");
+  var is_chinese_char2 = (cp) => cp >= 19968 && cp <= 40959 || cp >= 13312 && cp <= 19903 || cp >= 131072 && cp <= 173791 || cp >= 173824 && cp <= 177983 || cp >= 177984 && cp <= 178207 || cp >= 178208 && cp <= 183983 || cp >= 63744 && cp <= 64255 || cp >= 194560 && cp <= 195103;
+  var BaseStreamer = class {
+    /**
+     * Function that is called by `.generate()` to push new tokens
+     * @param {bigint[][]} value
+     */
+    put(value) {
+      throw Error("Not implemented");
     }
-    const metadata = await get_file_metadata(modelId, IMAGE_PROCESSOR_NAME, {});
-    return metadata.exists ? [IMAGE_PROCESSOR_NAME] : [];
-  }
-  async function get_files(modelId, {
-    config = null,
-    dtype = null,
-    device = null,
-    model_file_name = null,
-    include_tokenizer = true,
-    include_processor = true
-  } = {}) {
-    const files = await get_model_files(modelId, { config, dtype, device, model_file_name });
-    if (include_tokenizer) {
-      const tokenizerFiles = await get_tokenizer_files(modelId);
-      files.push(...tokenizerFiles);
+    /**
+     * Function that is called by `.generate()` to signal the end of generation
+     */
+    end() {
+      throw Error("Not implemented");
     }
-    if (include_processor) {
-      const processorFiles = await get_processor_files(modelId);
-      files.push(...processorFiles);
-    }
-    return files;
-  }
-  async function get_pipeline_files(task, modelId, options = {}) {
-    task = TASK_ALIASES[task] ?? task;
-    const taskConfig = SUPPORTED_TASKS[task];
-    if (!taskConfig) {
-      throw new Error(
-        `Unsupported pipeline task: ${task}. Must be one of [${Object.keys(SUPPORTED_TASKS).join(", ")}]`
-      );
-    }
-    const { type } = taskConfig;
-    const include_tokenizer = type !== "audio" && type !== "image";
-    const include_processor = type !== "text";
-    const files = await get_files(modelId, {
-      ...options,
-      include_tokenizer,
-      include_processor
-    });
-    if (task === "text-generation") {
-      const config = await get_config(modelId, options);
-      const modelType = resolve_model_type(config);
-      const textOnlySessions = getTextOnlySessions(modelType);
-      if (textOnlySessions) {
-        const allowedPrefixes = Object.values(textOnlySessions).map((s) => `onnx/${s}`);
-        return files.filter((f) => !f.startsWith("onnx/") || allowedPrefixes.some((p) => f.startsWith(p)));
-      }
-    }
-    return files;
-  }
-  async function pipeline2(task, model = null, {
-    progress_callback = null,
-    config = null,
-    cache_dir = null,
-    local_files_only = false,
-    revision = "main",
-    device = null,
-    dtype = null,
-    subfolder = "onnx",
-    use_external_data_format = null,
-    model_file_name = null,
-    session_options = {}
-  } = {}) {
-    task = TASK_ALIASES[task] ?? task;
-    const pipelineInfo = SUPPORTED_TASKS[task.split("_", 1)[0]];
-    if (!pipelineInfo) {
-      throw Error(`Unsupported pipeline: ${task}. Must be one of [${Object.keys(SUPPORTED_TASKS)}]`);
-    }
-    if (!model) {
-      model = pipelineInfo.default.model;
-      logger.info(`No model specified. Using default model: "${model}".`);
-      if (!dtype && pipelineInfo.default.dtype) {
-        dtype = pipelineInfo.default.dtype;
-      }
-    }
-    const expected_files = await get_pipeline_files(task, model, {
-      device,
-      dtype
-    });
-    let files_loading = {};
-    if (progress_callback) {
-      const metadata = await Promise.all(expected_files.map(async (file) => get_file_metadata(model, file)));
-      metadata.forEach((m, i) => {
-        if (m.exists) {
-          files_loading[expected_files[i]] = {
-            loaded: 0,
-            total: m.size ?? 0
-          };
-        }
-      });
-    }
-    const pretrainedOptions = {
-      progress_callback: progress_callback ? new DefaultProgressCallback(progress_callback, files_loading) : void 0,
-      config,
-      cache_dir,
-      local_files_only,
-      revision,
-      device,
-      dtype,
-      subfolder,
-      use_external_data_format,
-      model_file_name,
-      session_options
-    };
-    const hasTokenizer = expected_files.includes("tokenizer.json");
-    const hasProcessor = expected_files.includes("preprocessor_config.json");
-    const modelClasses = pipelineInfo.model;
-    let modelPromise;
-    if (Array.isArray(modelClasses)) {
-      const resolvedConfig = config ?? await AutoConfig.from_pretrained(model, pretrainedOptions);
-      const { model_type } = resolvedConfig;
-      const matchedClass = modelClasses.find((cls) => cls.supports(model_type));
-      if (!matchedClass) {
-        throw Error(
-          `Unsupported model type "${model_type}" for task "${task}". None of the candidate model classes support this type.`
-        );
-      }
-      modelPromise = matchedClass.from_pretrained(model, { ...pretrainedOptions, config: resolvedConfig });
-    } else {
-      modelPromise = modelClasses.from_pretrained(model, pretrainedOptions);
-    }
-    const [tokenizer, processor, model_loaded] = await Promise.all([
-      hasTokenizer ? AutoTokenizer.from_pretrained(model, pretrainedOptions) : null,
-      hasProcessor ? AutoProcessor.from_pretrained(model, pretrainedOptions) : null,
-      modelPromise
-    ]);
-    const results = { task, model: model_loaded };
-    if (tokenizer) results.tokenizer = tokenizer;
-    if (processor) results.processor = processor;
-    dispatchCallback(progress_callback, {
-      status: "ready",
-      task,
-      model
-    });
-    const pipelineClass = pipelineInfo.pipeline;
-    return new pipelineClass(results);
-  }
+  };
   var stdout_write = apis.IS_PROCESS_AVAILABLE ? (x) => process.stdout.write(x) : (x) => console.log(x);
+  var TextStreamer = class extends BaseStreamer {
+    /**
+     *
+     * @param {import('../tokenization_utils.js').PreTrainedTokenizer} tokenizer
+     * @param {Object} options
+     * @param {boolean} [options.skip_prompt=false] Whether to skip the prompt tokens
+     * @param {boolean} [options.skip_special_tokens=true] Whether to skip special tokens when decoding
+     * @param {function(string): void} [options.callback_function=null] Function to call when a piece of text is ready to display
+     * @param {function(bigint[]): void} [options.token_callback_function=null] Function to call when a new token is generated
+     * @param {Object} [options.decode_kwargs={}] Additional keyword arguments to pass to the tokenizer's decode method
+     */
+    constructor(tokenizer, {
+      skip_prompt = false,
+      callback_function = null,
+      token_callback_function = null,
+      skip_special_tokens = true,
+      decode_kwargs = {},
+      ...kwargs
+    } = {}) {
+      super();
+      this.tokenizer = tokenizer;
+      this.skip_prompt = skip_prompt;
+      this.callback_function = callback_function ?? stdout_write;
+      this.token_callback_function = token_callback_function;
+      this.decode_kwargs = { skip_special_tokens, ...decode_kwargs, ...kwargs };
+      this.token_cache = [];
+      this.print_len = 0;
+      this.next_tokens_are_prompt = true;
+      this.special_ids = new Set(this.tokenizer.all_special_ids.map(BigInt));
+    }
+    /**
+     * Receives tokens, decodes them, and prints them to stdout as soon as they form entire words.
+     * @param {bigint[][]} value
+     */
+    put(value) {
+      if (value.length > 1) {
+        throw Error("TextStreamer only supports batch size of 1");
+      }
+      const is_prompt = this.next_tokens_are_prompt;
+      if (is_prompt) {
+        this.next_tokens_are_prompt = false;
+        if (this.skip_prompt) return;
+      }
+      const tokens = value[0];
+      this.token_callback_function?.(tokens);
+      if (tokens.length === 1 && this.special_ids.has(tokens[0])) {
+        if (this.decode_kwargs.skip_special_tokens) return;
+        if (this.token_cache.length > 0) {
+          const text2 = this.tokenizer.decode(this.token_cache, this.decode_kwargs);
+          const printable_text2 = text2.slice(this.print_len);
+          this.on_finalized_text(printable_text2, false);
+          this.token_cache = [];
+          this.print_len = 0;
+        }
+        const special_text = this.tokenizer.decode(tokens, this.decode_kwargs);
+        this.on_finalized_text(special_text, false);
+        return;
+      }
+      this.token_cache = mergeArrays(this.token_cache, tokens);
+      const text = this.tokenizer.decode(this.token_cache, this.decode_kwargs);
+      let printable_text;
+      if (is_prompt || text.endsWith("\n")) {
+        printable_text = text.slice(this.print_len);
+        this.token_cache = [];
+        this.print_len = 0;
+      } else if (text.length > 0 && is_chinese_char2(text.charCodeAt(text.length - 1))) {
+        printable_text = text.slice(this.print_len);
+        this.print_len += printable_text.length;
+      } else {
+        printable_text = text.slice(this.print_len, text.lastIndexOf(" ") + 1);
+        this.print_len += printable_text.length;
+      }
+      this.on_finalized_text(printable_text, false);
+    }
+    /**
+     * Flushes any remaining cache and prints a newline to stdout.
+     */
+    end() {
+      let printable_text;
+      if (this.token_cache.length > 0) {
+        const text = this.tokenizer.decode(this.token_cache, this.decode_kwargs);
+        printable_text = text.slice(this.print_len);
+        this.token_cache = [];
+        this.print_len = 0;
+      } else {
+        printable_text = "";
+      }
+      this.next_tokens_are_prompt = true;
+      this.on_finalized_text(printable_text, true);
+    }
+    /**
+     * Prints the new text to stdout. If the stream is ending, also prints a newline.
+     * @param {string} text
+     * @param {boolean} stream_end
+     */
+    on_finalized_text(text, stream_end) {
+      if (text.length > 0) {
+        this.callback_function?.(text);
+      }
+      if (stream_end && this.callback_function === stdout_write && apis.IS_PROCESS_AVAILABLE) {
+        this.callback_function?.("\n");
+      }
+    }
+  };
   var CONCRETE_DTYPES = Object.keys(DEFAULT_DTYPE_SUFFIX_MAPPING);
 
-  // scripts/translate-page-entry.mjs
+  // scripts/chat-gemma-entry.mjs
   env2.allowLocalModels = false;
   env2.allowRemoteModels = true;
-  env2.backends.onnx.wasm.numThreads = 1;
   env2.backends.onnx.logLevel = "error";
-  var PIPELINE_RUNTIME_OPTIONS = {
-    device: "wasm",
-    dtype: "q8"
-  };
-  var SILENCED_WARNING_PATTERNS = [
-    "Unable to determine content-length from response headers. Will expand buffer when needed.",
-    'WARNING: `MarianTokenizer` is not yet supported by Hugging Face\'s "fast" tokenizers library.'
+  var MODEL_ID = "onnx-community/gemma-4-E2B-it-ONNX";
+  var MODEL_LABEL = "Gemma 4 E2B";
+  var DEFAULT_SYSTEM_PROMPT = "You are a helpful assistant inside an offline dictionary app. Always answer in English by default. Only reply in Vietnamese if the user writes in Vietnamese. Keep answers clear, practical, and concise.";
+  var SILENCED_WARNINGS = [
+    "Unable to determine content-length from response headers."
   ];
-  var MAX_WORDS_PER_CHUNK = 56;
-  var MAX_CHARS_PER_CHUNK = 360;
-  var MAX_WORDS_PER_FALLBACK_CHUNK = 24;
-  var MAX_CHARS_PER_FALLBACK_CHUNK = 180;
-  var MODEL_META = {
-    "en-vi": {
-      label: "English -> Vietnamese",
-      modelId: "Xenova/opus-mt-en-vi",
-      inputLabel: "Nhap cau tieng Anh",
-      placeholder: "Vi du: Technology helps people learn faster when the tools are easy to use.",
-      sample: "Technology helps people learn faster when the tools are easy to use.",
-      hint: "Nhap mot hoac nhieu doan tieng Anh roi bam Dich. Trang se tu tach doan dai va them target token >>vie<< cho model EN -> VI.",
-      prefix: ">>vie<< "
-    },
-    "vi-en": {
-      label: "Vietnamese -> English",
-      modelId: "Xenova/opus-mt-vi-en",
-      inputLabel: "Nhap cau tieng Viet",
-      placeholder: "Vi du: Cong cu tot giup moi nguoi hoc nhanh hon va lam viec de hon.",
-      sample: "Cong cu tot giup moi nguoi hoc nhanh hon va lam viec de hon.",
-      hint: "Nhap mot hoac nhieu doan tieng Viet roi bam Dich. Trang se tu tach doan dai de dich lan luot.",
-      prefix: ""
-    }
-  };
-  var FILE_LABELS = {
-    "config.json": "config",
-    "generation_config.json": "generation config",
-    "tokenizer.json": "tokenizer",
-    "tokenizer_config.json": "tokenizer config",
-    "source.spm": "source sentencepiece",
-    "target.spm": "target sentencepiece",
-    "vocab.json": "vocabulary",
-    "onnx/encoder_model_quantized.onnx": "encoder quantized",
-    "onnx/decoder_model_quantized.onnx": "decoder quantized",
-    "onnx/decoder_with_past_model_quantized.onnx": "decoder-with-past quantized",
-    "onnx/encoder_model_int8.onnx": "encoder int8",
-    "onnx/decoder_model_int8.onnx": "decoder int8",
-    "onnx/decoder_with_past_model_int8.onnx": "decoder-with-past int8",
-    "onnx/encoder_model_q4.onnx": "encoder q4",
-    "onnx/decoder_model_q4.onnx": "decoder q4",
-    "onnx/decoder_with_past_model_q4.onnx": "decoder-with-past q4"
-  };
+  var MAX_IMAGE_DIMENSION = 1024;
+  var model = null;
+  var processor = null;
+  var textStreamer = null;
+  var DEFAULT_CONTEXT = 8192;
+  var MAX_CONTEXT = 32768;
+  var MIN_CONTEXT = 512;
   var state = {
-    direction: "en-vi",
-    translatorPromises: /* @__PURE__ */ new Map(),
-    requestToken: 0,
-    hasOutput: false
+    loading: false,
+    generating: false,
+    interruptRequested: false,
+    messages: [],
+    thinkingEnabled: false,
+    sidePanelHidden: false,
+    loadProgress: 0,
+    loadStatusText: "Idle",
+    lastUsage: null,
+    selectedImages: [],
+    contextWindow: DEFAULT_CONTEXT
   };
-  var directionButtons = Array.from(document.querySelectorAll("[data-direction]"));
-  var sourcePanelTitle = document.getElementById("source-panel-title");
-  var sourceText = document.getElementById("source-text");
-  var translatedText = document.getElementById("translated-text");
-  var translateHint = document.getElementById("translate-hint");
-  var translateStatus = document.getElementById("translate-status");
-  var translateButton = document.getElementById("translate-button");
-  var swapButton = document.getElementById("swap-button");
-  var sampleButton = document.getElementById("fill-sample-button");
-  var clearButton = document.getElementById("clear-translation-button");
-  var copyButton = document.getElementById("copy-button");
-  var charCount = document.getElementById("input-char-count");
-  var translateMeta = document.getElementById("translate-meta");
-  var sentenceSegmenter;
-  function getDirectionMeta(direction = state.direction) {
-    return MODEL_META[direction];
+  var modelSelect = document.getElementById("chat-model-select");
+  var modelBadge = document.getElementById("chat-model-badge");
+  var modelSummary = document.getElementById("chat-model-summary");
+  var modelRiskBanner = document.getElementById("chat-model-risk-banner");
+  var modelMemory = document.getElementById("chat-model-memory");
+  var modelContext = document.getElementById("chat-model-context");
+  var modelLowResource = document.getElementById("chat-model-low-resource");
+  var modelFeatures = document.getElementById("chat-model-features");
+  var modelStatusNote = document.getElementById("chat-model-status-note");
+  var contextWindowInput = document.getElementById("chat-context-window-input");
+  var resetContextWindowButton = document.getElementById("reset-context-window-button");
+  var contextHelp = document.getElementById("chat-context-help");
+  var thinkingToggle = document.getElementById("chat-thinking-toggle");
+  var thinkingHelp = document.getElementById("chat-thinking-help");
+  var refreshCacheButton = document.getElementById("refresh-cache-button");
+  var deleteSelectedCacheButton = document.getElementById("delete-selected-cache-button");
+  var cacheList = document.getElementById("chat-cache-list");
+  var cacheStatus = document.getElementById("chat-cache-status");
+  var loadModelButton = document.getElementById("load-model-button");
+  var newChatButton = document.getElementById("new-chat-button");
+  var stopButton = document.getElementById("stop-chat-button");
+  var toggleSidePanelButton = document.getElementById("toggle-chat-side-panel-button");
+  var clearInputButton = document.getElementById("clear-chat-input-button");
+  var systemPromptInput = document.getElementById("chat-system-prompt");
+  var chatStatus = document.getElementById("chat-status");
+  var decoyShell = document.getElementById("chat-decoy");
+  var aiShell = document.getElementById("chat-ai-app");
+  var chatLayout = document.getElementById("chat-layout");
+  var chatSidePanel = document.getElementById("chat-side-panel");
+  var chatMessages = document.getElementById("chat-messages");
+  var chatMessageCount = document.getElementById("chat-message-count");
+  var chatInput = document.getElementById("chat-input");
+  var chatPromptCount = document.getElementById("chat-prompt-count");
+  var chatRuntimeMeta = document.getElementById("chat-runtime-meta");
+  var sendButton = document.getElementById("chat-send-button");
+  var suggestionButtons = Array.from(document.querySelectorAll("[data-chat-suggestion]"));
+  var imageUploadButton = document.getElementById("chat-image-upload-button");
+  var imageFileInput = document.getElementById("chat-image-file-input");
+  var imagePreview = document.getElementById("chat-image-preview");
+  function escapeHtml(text) {
+    return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
-  function getSentenceSegmenter() {
-    if (typeof Intl === "undefined" || typeof Intl.Segmenter !== "function") {
-      return null;
+  function setStatus(message, tone = "info") {
+    chatStatus.textContent = message;
+    chatStatus.dataset.tone = tone;
+  }
+  function setPromptCount() {
+    chatPromptCount.textContent = String(chatInput.value.length);
+  }
+  function setBusyState() {
+    const isBusy = state.loading || state.generating;
+    const isLoaded = model !== null && processor !== null;
+    loadModelButton.disabled = state.loading || isLoaded;
+    loadModelButton.textContent = isLoaded ? "Da nap" : "Nap model";
+    newChatButton.disabled = state.loading || state.generating || state.messages.length === 0;
+    stopButton.disabled = !state.generating;
+    clearInputButton.disabled = state.generating || chatInput.value.length === 0 && state.selectedImages.length === 0;
+    sendButton.disabled = state.loading || state.generating || chatInput.value.trim().length === 0 && state.selectedImages.length === 0;
+    thinkingToggle.disabled = state.loading || state.generating;
+    refreshCacheButton.disabled = isBusy;
+    deleteSelectedCacheButton.disabled = true;
+    if (modelSelect) {
+      modelSelect.disabled = isBusy;
     }
-    if (!sentenceSegmenter) {
-      sentenceSegmenter = new Intl.Segmenter(void 0, { granularity: "sentence" });
+    if (contextWindowInput) {
+      contextWindowInput.disabled = state.loading;
     }
-    return sentenceSegmenter;
+    if (imageUploadButton) {
+      imageUploadButton.disabled = state.generating || !isLoaded;
+    }
   }
-  function isKnownLibraryWarning(message) {
-    return SILENCED_WARNING_PATTERNS.some((pattern) => message.includes(pattern));
+  function setAiAppVisible(visible) {
+    decoyShell.hidden = visible;
+    decoyShell.setAttribute("aria-hidden", String(visible));
+    aiShell.hidden = !visible;
+    aiShell.setAttribute("aria-hidden", String(!visible));
+    if (visible) {
+      setTimeout(() => {
+        chatInput.focus();
+      }, 0);
+    }
   }
-  async function withFilteredWarnings(task) {
-    const originalWarn = console.warn;
-    console.warn = function filteredWarn(...args) {
+  function toggleAiAppVisibility() {
+    setAiAppVisible(aiShell.hidden);
+  }
+  function handleSecretShortcut(event) {
+    if (!event.ctrlKey || event.altKey || event.shiftKey || event.key.toLowerCase() !== "q") {
+      return;
+    }
+    event.preventDefault();
+    toggleAiAppVisibility();
+  }
+  function setSidePanelHidden(hidden) {
+    state.sidePanelHidden = hidden;
+    chatSidePanel.hidden = hidden;
+    chatLayout.classList.toggle("is-side-panel-hidden", hidden);
+    toggleSidePanelButton.textContent = hidden ? "Hien thong tin" : "An thong tin";
+    toggleSidePanelButton.setAttribute("aria-expanded", String(!hidden));
+  }
+  function updateModelPanel() {
+    const isLoaded = model !== null && processor !== null;
+    if (modelSelect) {
+      modelSelect.innerHTML = `<option value="gemma4" selected>${MODEL_LABEL} - 2.3B eff - ~3.1 GB</option>`;
+      modelSelect.disabled = state.loading || state.generating;
+    }
+    modelSummary.textContent = `Google Gemma 4 E2B — 2.3B params hieu qua, 128K context goc, On-Device.`;
+    modelRiskBanner.hidden = false;
+    modelRiskBanner.dataset.tone = state.contextWindow > 16384 ? "danger" : "warning";
+    modelRiskBanner.textContent = state.contextWindow > 16384 ? `Context ${state.contextWindow} rat lon, co the gay thieu VRAM hoac that bai khi nap. Neu gap loi, ha ve ${DEFAULT_CONTEXT}.` : `Tai lan dau ~3.1 GB. Can WebGPU. Sau khi tai, browser co the dung lai tu cache IndexedDB. Khong can internet cho cac lan sau.`;
+    modelMemory.textContent = "~3.1 GB download";
+    modelContext.textContent = `${state.contextWindow} tokens`;
+    modelLowResource.textContent = "Khong";
+    modelFeatures.textContent = "WebGPU";
+    if (contextWindowInput) {
+      contextWindowInput.value = String(state.contextWindow);
+      contextWindowInput.min = String(MIN_CONTEXT);
+      contextWindowInput.max = String(MAX_CONTEXT);
+      contextWindowInput.disabled = state.loading;
+    }
+    if (contextHelp) {
+      contextHelp.textContent = `Gia tri hop le: ${MIN_CONTEXT} - ${MAX_CONTEXT} tokens. Model goc ho tro toi da 128K. Context cang lon cang ton RAM/VRAM. Can nap lai model khi thay doi.`;
+    }
+    if (resetContextWindowButton) {
+      resetContextWindowButton.disabled = state.loading || state.contextWindow === DEFAULT_CONTEXT;
+    }
+    thinkingHelp.textContent = state.thinkingEnabled ? "Dang bat think mode. Model se suy luan noi bo truoc khi tra loi, tang chat luong nhung cham hon." : "Dang tat think mode. Model se tra loi nhanh hon, phu hop cho hoi thoai thong thuong.";
+    modelBadge.textContent = state.loading ? "Loading" : isLoaded ? "Loaded" : "Idle";
+    modelStatusNote.textContent = state.loading ? `Dang nap ${MODEL_LABEL} voi context ${state.contextWindow}... Lan dau can internet de tai ~3.1 GB vao cache IndexedDB cua browser.` : isLoaded ? `${MODEL_LABEL} da san sang voi context ${state.contextWindow}. Ban co the chat ngoai tuyen. Mo lai trang se load tu cache.` : `${MODEL_LABEL} chua duoc nap voi context ${state.contextWindow}. Bam "Nap model" de tai model ve browser. Lan dau can internet.`;
+  }
+  function renderMessages() {
+    const visibleMessages = state.messages;
+    if (visibleMessages.length === 0) {
+      chatMessages.innerHTML = `
+      <div class="chat-empty-state">
+        <h3>AI chat da san sang</h3>
+        <p>Nap Gemma 4 E2B, roi hoi bat ky dieu gi bang tieng Anh hoac tieng Viet. Co the dinh kem anh.</p>
+      </div>
+    `;
+      chatMessageCount.textContent = "0";
+      return;
+    }
+    chatMessages.innerHTML = visibleMessages.map((message) => {
+      const roleLabel = message.role === "user" ? "Ban" : message.partial ? "AI (partial)" : "AI";
+      let bubbleContent = "";
+      if (message.imageDataUrls && message.imageDataUrls.length > 0) {
+        message.imageDataUrls.forEach(function(url) {
+          bubbleContent += `<img class="chat-bubble-image" src="${url}" alt="Attached image">`;
+        });
+      }
+      const textContent = message.content || (message.pending ? "Dang soan cau tra loi..." : "");
+      if (textContent) {
+        bubbleContent += escapeHtml(textContent);
+      }
+      return `
+        <article class="chat-message ${message.role}${message.pending ? " pending" : ""}">
+          <p class="chat-message-role">${roleLabel}</p>
+          <div class="chat-bubble">${bubbleContent}</div>
+        </article>
+      `;
+    }).join("");
+    chatMessageCount.textContent = String(visibleMessages.length);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+  function buildRuntimeMeta(extraText = "") {
+    const parts = [];
+    if (model !== null) {
+      parts.push(`Model: ${MODEL_LABEL}`);
+    } else {
+      parts.push("Model chua duoc nap");
+    }
+    parts.push(`Context ${state.contextWindow}`);
+    if (state.thinkingEnabled) {
+      parts.push("Think ON");
+    }
+    const usageText = formatUsage(state.lastUsage);
+    if (usageText) {
+      parts.push(usageText);
+    }
+    if (extraText) {
+      parts.push(extraText);
+    }
+    chatRuntimeMeta.textContent = parts.join(" | ") || "Model chua duoc nap. Lan dau can internet de tai model vao cache cua browser.";
+  }
+  function formatUsage(usage) {
+    if (!usage) {
+      return "";
+    }
+    const parts = [];
+    if (typeof usage.prompt_tokens === "number") {
+      parts.push(`Prompt ${usage.prompt_tokens}`);
+    }
+    if (typeof usage.completion_tokens === "number") {
+      parts.push(`Output ${usage.completion_tokens}`);
+    }
+    if (typeof usage.total_tokens === "number") {
+      parts.push(`Tong ${usage.total_tokens}`);
+    }
+    return parts.join(" | ");
+  }
+  function createApiMessages() {
+    const messages = [];
+    const systemPrompt = systemPromptInput.value.trim();
+    if (systemPrompt) {
+      messages.push({ role: "system", content: systemPrompt });
+    }
+    state.messages.filter((message) => !message.pending).forEach((message) => {
+      if (message.role === "user") {
+        const contentParts = [];
+        if (message.images && message.images.length > 0) {
+          message.images.forEach(function(img) {
+            contentParts.push({ type: "image", image: img.rawImage });
+          });
+        }
+        if (message.content) {
+          contentParts.push({ type: "text", text: message.content });
+        }
+        messages.push({
+          role: "user",
+          content: contentParts.length === 1 && contentParts[0].type === "text" ? contentParts[0].text : contentParts
+        });
+      } else {
+        messages.push({
+          role: message.role,
+          content: message.content
+        });
+      }
+    });
+    return messages;
+  }
+  function isWebGpuLikelyAvailable() {
+    return typeof navigator !== "undefined" && "gpu" in navigator;
+  }
+  function filterWarnings(originalWarn) {
+    return function filteredWarn(...args) {
       const [firstArg] = args;
       const message = typeof firstArg === "string" ? firstArg : "";
-      if (isKnownLibraryWarning(message)) {
+      if (SILENCED_WARNINGS.some((pattern) => message.includes(pattern))) {
         return;
       }
       originalWarn.apply(console, args);
     };
+  }
+  async function loadModel() {
+    if (state.loading) {
+      return;
+    }
+    if (model !== null && processor !== null) {
+      setStatus(`${MODEL_LABEL} da duoc nap san sang. Ban co the bat dau chat ngay.`, "success");
+      return;
+    }
+    if (!isWebGpuLikelyAvailable()) {
+      setStatus(
+        "Trinh duyet nay chua bat WebGPU. Thu Chrome/Edge moi hon, hoac mo trang tren localhost/https.",
+        "error"
+      );
+      return;
+    }
+    state.loading = true;
+    state.loadProgress = 0;
+    state.loadStatusText = "Dang chuan bi...";
+    updateModelPanel();
+    setBusyState();
+    setStatus(`Dang tai ${MODEL_LABEL} voi context ${state.contextWindow}... Lan dau can internet de tai ~3.1 GB.`, "info");
+    const originalWarn = console.warn;
+    console.warn = filterWarnings(originalWarn);
     try {
-      return await task();
+      const progressConfig = {
+        progress_callback: function(info) {
+          if (info.status === "progress") {
+            const pct = typeof info.progress === "number" && Number.isFinite(info.progress) ? Math.round(info.progress) : state.loadProgress;
+            state.loadProgress = pct;
+            const file = info.file || "";
+            const fileLabel = file ? file.replace(/^onnx\//, "").replace(/_data$/, "") : "";
+            state.loadStatusText = fileLabel ? `Dang tai ${fileLabel} (${pct}%)` : `Dang tai... (${pct}%)`;
+            setStatus(state.loadStatusText, "info");
+            modelBadge.textContent = "Loading";
+          } else if (info.status === "initiate") {
+            const fileLabel = (info.file || "").replace(/^onnx\//, "").replace(/_data$/, "");
+            state.loadStatusText = fileLabel ? `Chuan bi ${fileLabel}...` : "Dang chuan bi...";
+            setStatus(state.loadStatusText, "info");
+          } else if (info.status === "done") {
+            setStatus("Dang hoan thien...", "info");
+          }
+        }
+      };
+      const loadResults = await Promise.all([
+        AutoProcessor.from_pretrained(MODEL_ID, progressConfig),
+        Gemma4ForConditionalGeneration.from_pretrained(MODEL_ID, {
+          dtype: "q4f16",
+          device: "webgpu",
+          ...progressConfig
+        })
+      ]);
+      processor = loadResults[0];
+      model = loadResults[1];
+      textStreamer = new TextStreamer(processor.tokenizer, {
+        skip_prompt: true
+      });
+      setStatus(`${MODEL_LABEL} da san sang voi context ${state.contextWindow}. Sau lan tai dau, browser co the chat offline neu cache chua bi xoa.`, "success");
+      updateModelPanel();
+      buildRuntimeMeta();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setStatus(`Khong nap duoc model: ${message}`, "error");
+      console.error(error);
     } finally {
       console.warn = originalWarn;
+      state.loading = false;
+      state.loadProgress = 0;
+      state.loadStatusText = "Idle";
+      updateModelPanel();
+      setBusyState();
     }
   }
-  function setStatus(message, tone = "info") {
-    translateStatus.textContent = message;
-    translateStatus.dataset.tone = tone;
-  }
-  function formatFileLabel(file) {
-    if (!file) {
-      return "model file";
-    }
-    return FILE_LABELS[file] || file.replace(/^onnx\//, "");
-  }
-  function buildProgressMessage(direction, event) {
-    const meta = getDirectionMeta(direction);
-    const fileLabel = formatFileLabel(event.file);
-    switch (event.status) {
-      case "initiate":
-        return `Dang chuan bi ${meta.label}: ${fileLabel}...`;
-      case "download":
-        return `Dang tai ${meta.label}: ${fileLabel}...`;
-      case "progress": {
-        const percent = typeof event.progress === "number" && Number.isFinite(event.progress) ? ` (${Math.round(event.progress)}%)` : "";
-        return `Dang tai ${meta.label}: ${fileLabel}${percent}`;
-      }
-      case "done":
-        return `${meta.label}: da xong ${fileLabel}.`;
-      default:
-        return `Dang nap ${meta.label}...`;
-    }
-  }
-  function updateDirectionUI() {
-    const meta = getDirectionMeta();
-    directionButtons.forEach((button) => {
-      button.classList.toggle("active", button.dataset.direction === state.direction);
-    });
-    sourcePanelTitle.textContent = meta.inputLabel;
-    sourceText.placeholder = meta.placeholder;
-    translateHint.textContent = meta.hint;
-    translateMeta.textContent = `Model: ${meta.modelId} | Runtime: wasm / q8`;
-  }
-  function updateCharCount() {
-    charCount.textContent = String(sourceText.value.length);
-  }
-  function setOutputText(value, isEmptyState = false) {
-    translatedText.textContent = value;
-    translatedText.classList.toggle("empty-state", isEmptyState);
-    state.hasOutput = !isEmptyState;
-    copyButton.disabled = isEmptyState;
-  }
-  function resetOutput() {
-    setOutputText("Ban dich se hien o day sau khi ban bam Dich.", true);
-  }
-  function normalizeInputText(text, direction) {
-    const trimmed = text.trim();
-    if (!trimmed) {
-      return "";
-    }
-    const prefix = getDirectionMeta(direction).prefix;
-    return prefix && !trimmed.startsWith(prefix) ? prefix + trimmed : trimmed;
-  }
-  function normalizeWhitespace(text) {
-    return text.replace(/\s+/g, " ").trim();
-  }
-  function countWords(text) {
-    return text.trim().split(/\s+/).filter(Boolean).length;
-  }
-  function exceedsChunkLimit(text, maxWords = MAX_WORDS_PER_CHUNK, maxChars = MAX_CHARS_PER_CHUNK) {
-    return countWords(text) > maxWords || text.length > maxChars;
-  }
-  function mergeUnitsIntoChunks(units, maxWords = MAX_WORDS_PER_CHUNK, maxChars = MAX_CHARS_PER_CHUNK) {
-    const chunks = [];
-    let current = "";
-    units.map(normalizeWhitespace).filter(Boolean).forEach((unit) => {
-      const candidate = current ? `${current} ${unit}` : unit;
-      if (current && exceedsChunkLimit(candidate, maxWords, maxChars)) {
-        chunks.push(current);
-        current = unit;
-      } else {
-        current = candidate;
-      }
-    });
-    if (current) {
-      chunks.push(current);
-    }
-    return chunks;
-  }
-  function splitByWordBudget(text, maxWords = MAX_WORDS_PER_FALLBACK_CHUNK, maxChars = MAX_CHARS_PER_FALLBACK_CHUNK) {
-    const words = normalizeWhitespace(text).split(/\s+/).filter(Boolean);
-    if (words.length === 0) {
-      return [];
-    }
-    const chunks = [];
-    let currentWords = [];
-    let currentLength = 0;
-    words.forEach((word) => {
-      const nextLength = currentWords.length === 0 ? word.length : currentLength + 1 + word.length;
-      const wouldExceed = currentWords.length > 0 && (currentWords.length >= maxWords || nextLength > maxChars);
-      if (wouldExceed) {
-        chunks.push(currentWords.join(" "));
-        currentWords = [word];
-        currentLength = word.length;
-        return;
-      }
-      currentWords.push(word);
-      currentLength = nextLength;
-    });
-    if (currentWords.length > 0) {
-      chunks.push(currentWords.join(" "));
-    }
-    return chunks;
-  }
-  function splitLongUnit(text) {
-    const normalized = normalizeWhitespace(text);
-    if (!normalized) {
-      return [];
-    }
-    if (!exceedsChunkLimit(normalized)) {
-      return [normalized];
-    }
-    const clauseParts = normalized.split(/(?<=[,;:])\s+/).map(normalizeWhitespace).filter(Boolean);
-    if (clauseParts.length > 1) {
-      return mergeUnitsIntoChunks(
-        clauseParts,
-        MAX_WORDS_PER_FALLBACK_CHUNK,
-        MAX_CHARS_PER_FALLBACK_CHUNK
-      ).flatMap((chunk2) => {
-        return exceedsChunkLimit(chunk2, MAX_WORDS_PER_FALLBACK_CHUNK, MAX_CHARS_PER_FALLBACK_CHUNK) ? splitByWordBudget(chunk2) : [chunk2];
-      });
-    }
-    return splitByWordBudget(normalized);
-  }
-  function splitParagraphIntoUnits(paragraphText) {
-    const compactParagraph = paragraphText.replace(/\r\n/g, "\n").replace(/\n+/g, " ");
-    const normalizedParagraph = normalizeWhitespace(compactParagraph);
-    if (!normalizedParagraph) {
-      return [];
-    }
-    const segmenter = getSentenceSegmenter();
-    if (segmenter) {
-      const units = [];
-      for (const part of segmenter.segment(normalizedParagraph)) {
-        const segment = normalizeWhitespace(part.segment);
-        if (!segment) {
-          continue;
-        }
-        units.push(...splitLongUnit(segment));
-      }
-      if (units.length > 0) {
-        return units;
+  async function startNewChat() {
+    state.messages = [];
+    state.lastUsage = null;
+    clearSelectedImages();
+    renderMessages();
+    buildRuntimeMeta();
+    if (model) {
+      try {
+        model.reset_kv_cache();
+      } catch (e) {
       }
     }
-    return normalizedParagraph.split(/(?<=[.!?])\s+/).map(normalizeWhitespace).filter(Boolean).flatMap(splitLongUnit);
+    setStatus("Da bat dau cuoc hoi thoai moi.", "info");
+    setBusyState();
+    chatInput.focus();
   }
-  function splitTextIntoBlocks(text) {
-    return text.replace(/\r\n/g, "\n").split(/(\n\s*\n+)/).filter((part) => part.length > 0).map((part) => {
-      const isSeparator = /^\n\s*\n+$/.test(part);
-      return isSeparator ? { type: "separator", value: part } : { type: "paragraph", value: part };
-    });
-  }
-  function buildTranslationPlan(text) {
-    return splitTextIntoBlocks(text).map((block) => {
-      if (block.type === "separator") {
-        return block;
-      }
-      const units = splitParagraphIntoUnits(block.value);
-      return {
-        ...block,
-        chunks: mergeUnitsIntoChunks(units)
-      };
-    });
-  }
-  function countPlanParagraphs(plan) {
-    return plan.filter((block) => block.type === "paragraph").length;
-  }
-  function countPlanChunks(plan) {
-    return plan.reduce((total, block) => {
-      return block.type === "paragraph" ? total + block.chunks.length : total;
-    }, 0);
-  }
-  function joinTranslatedChunks(chunks) {
-    return chunks.map(normalizeWhitespace).filter(Boolean).join(" ");
-  }
-  function buildOutputPreview(translatedBlocks, currentParagraphChunks = []) {
-    const previewBlocks = [...translatedBlocks];
-    if (currentParagraphChunks.length > 0) {
-      previewBlocks.push(joinTranslatedChunks(currentParagraphChunks));
-    }
-    return previewBlocks.join("");
-  }
-  function estimateMaxNewTokens(text) {
-    const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
-    return Math.max(64, Math.min(256, wordCount * 5 + 16));
-  }
-  function extractTranslatedText(result) {
-    if (Array.isArray(result)) {
-      return result[0]?.translation_text || "";
-    }
-    return result?.translation_text || "";
-  }
-  function setBusy(isBusy) {
-    translateButton.disabled = isBusy;
-    swapButton.disabled = isBusy;
-    sampleButton.disabled = isBusy;
-    clearButton.disabled = isBusy;
-    directionButtons.forEach((button) => {
-      button.disabled = isBusy;
-    });
-  }
-  function createProgressCallback(direction) {
-    return function handleProgress(event) {
-      setStatus(buildProgressMessage(direction, event), "info");
-    };
-  }
-  async function getTranslator(direction) {
-    if (!state.translatorPromises.has(direction)) {
-      const meta = getDirectionMeta(direction);
-      const translatorPromise = withFilteredWarnings(
-        () => pipeline2("translation", meta.modelId, {
-          ...PIPELINE_RUNTIME_OPTIONS,
-          progress_callback: createProgressCallback(direction)
-        })
-      ).then((translator) => {
-        setStatus(
-          `${meta.label}: model da san sang. Neu browser cho phep cache, cac lan sau se nhanh hon.`,
-          "success"
-        );
-        return translator;
-      }).catch((error) => {
-        state.translatorPromises.delete(direction);
-        throw error;
-      });
-      state.translatorPromises.set(direction, translatorPromise);
-    }
-    return state.translatorPromises.get(direction);
-  }
-  async function translateCurrentText() {
-    const rawText = sourceText.value;
-    if (!rawText.trim()) {
-      resetOutput();
-      setStatus("Nhap van ban truoc khi dich.", "error");
-      sourceText.focus();
+  function stopGeneration() {
+    if (!state.generating) {
       return;
     }
-    const requestToken = ++state.requestToken;
-    const direction = state.direction;
-    const meta = getDirectionMeta(direction);
-    const translationPlan = buildTranslationPlan(rawText);
-    const totalParagraphs = countPlanParagraphs(translationPlan);
-    const totalChunks = countPlanChunks(translationPlan);
-    const translatedBlocks = [];
-    setBusy(true);
-    setOutputText("Dang dich, vui long doi trong giay lat...", true);
-    setStatus(
-      `Dang xu ly ${meta.label}. Van ban da duoc tach thanh ${totalParagraphs} doan va ${totalChunks} phan de dich lan luot...`,
-      "info"
-    );
-    try {
-      const translator = await getTranslator(direction);
-      let paragraphIndex = 0;
-      let chunkIndex = 0;
-      if (requestToken !== state.requestToken) {
-        return;
-      }
-      for (const block of translationPlan) {
-        if (requestToken !== state.requestToken) {
+    state.interruptRequested = true;
+    setStatus("Dang dung sinh cau tra loi...", "info");
+  }
+  function clearInput() {
+    chatInput.value = "";
+    setPromptCount();
+    setBusyState();
+    chatInput.focus();
+  }
+  async function resizeImageIfNeeded(dataUrl) {
+    return new Promise(function(resolve, reject) {
+      const img = new Image();
+      img.onload = function() {
+        if (img.width <= MAX_IMAGE_DIMENSION && img.height <= MAX_IMAGE_DIMENSION) {
+          resolve(dataUrl);
           return;
         }
-        if (block.type === "separator") {
-          translatedBlocks.push(block.value);
-          continue;
+        let w = img.width;
+        let h = img.height;
+        if (w > h) {
+          h = Math.round(h / w * MAX_IMAGE_DIMENSION);
+          w = MAX_IMAGE_DIMENSION;
+        } else {
+          w = Math.round(w / h * MAX_IMAGE_DIMENSION);
+          h = MAX_IMAGE_DIMENSION;
         }
-        paragraphIndex += 1;
-        const paragraphChunks = [];
-        for (const chunk2 of block.chunks) {
-          chunkIndex += 1;
-          setStatus(
-            `Dang dich ${meta.label}: doan ${paragraphIndex}/${totalParagraphs}, phan ${chunkIndex}/${totalChunks}...`,
-            "info"
-          );
-          const result = await translator(normalizeInputText(chunk2, direction), {
-            max_new_tokens: estimateMaxNewTokens(chunk2),
-            num_beams: 2
-          });
-          if (requestToken !== state.requestToken) {
-            return;
-          }
-          const translatedChunk = extractTranslatedText(result).trim();
-          if (!translatedChunk) {
-            setStatus("Model khong tra ve noi dung hop le.", "error");
-            return;
-          }
-          paragraphChunks.push(translatedChunk);
-          setOutputText(buildOutputPreview(translatedBlocks, paragraphChunks));
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.onerror = function() {
+        reject(new Error("Khong doc duoc anh."));
+      };
+      img.src = dataUrl;
+    });
+  }
+  function clearSelectedImages() {
+    state.selectedImages = [];
+    renderImagePreviews();
+    if (imageFileInput) imageFileInput.value = "";
+  }
+  function removeSelectedImage(index) {
+    state.selectedImages.splice(index, 1);
+    renderImagePreviews();
+    if (state.selectedImages.length === 0 && imageFileInput) {
+      imageFileInput.value = "";
+    }
+    setBusyState();
+    chatInput.focus();
+  }
+  function renderImagePreviews() {
+    if (!imagePreview) return;
+    if (state.selectedImages.length === 0) {
+      imagePreview.hidden = true;
+      imagePreview.innerHTML = "";
+      return;
+    }
+    imagePreview.hidden = false;
+    imagePreview.innerHTML = state.selectedImages.map(function(img, index) {
+      return `
+      <div class="chat-image-preview-item">
+        <img class="chat-image-preview-img" src="${img.dataUrl}" alt="Attached image ${index + 1}">
+        <button class="ghost-button chat-image-remove" type="button" data-image-index="${index}" title="Remove image ${index + 1}">x</button>
+      </div>
+    `;
+    }).join("");
+    imagePreview.querySelectorAll(".chat-image-remove").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        var idx = Number.parseInt(btn.dataset.imageIndex, 10);
+        if (Number.isFinite(idx) && idx >= 0 && idx < state.selectedImages.length) {
+          removeSelectedImage(idx);
         }
-        translatedBlocks.push(joinTranslatedChunks(paragraphChunks));
-        setOutputText(buildOutputPreview(translatedBlocks));
-      }
-      const translated = buildOutputPreview(translatedBlocks);
-      if (!translated.trim()) {
-        setOutputText("Khong nhan duoc ban dich tu model.", true);
-        setStatus("Model khong tra ve noi dung hop le.", "error");
-        return;
-      }
-      setOutputText(translated);
-      setStatus(`${meta.label}: da dich xong.`, "success");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      if (!translatedBlocks.some((block) => block.trim())) {
-        resetOutput();
-      }
-      setStatus(`Khong the dich luc nay: ${message}`, "error");
-    } finally {
-      if (requestToken === state.requestToken) {
-        setBusy(false);
-      }
-    }
+      });
+    });
   }
-  function swapDirection() {
-    const previousDirection = state.direction;
-    const nextDirection = previousDirection === "en-vi" ? "vi-en" : "en-vi";
-    const currentOutput = state.hasOutput ? translatedText.textContent : "";
-    state.direction = nextDirection;
-    updateDirectionUI();
-    if (currentOutput) {
-      sourceText.value = currentOutput;
-      resetOutput();
-      setStatus(`Da dao chieu sang ${getDirectionMeta().label}.`, "info");
-    } else {
-      setStatus(`Da chuyen sang ${getDirectionMeta().label}.`, "info");
-    }
-    updateCharCount();
-    sourceText.focus();
-  }
-  function fillSampleText() {
-    sourceText.value = getDirectionMeta().sample;
-    updateCharCount();
-    resetOutput();
-    setStatus("Da chen vi du. Bam Dich de thu ngay.", "info");
-    sourceText.focus();
-  }
-  function clearAll() {
-    state.requestToken += 1;
-    sourceText.value = "";
-    updateCharCount();
-    resetOutput();
-    setBusy(false);
-    setStatus("Da xoa noi dung. Ban co the nhap cau moi.", "info");
-    sourceText.focus();
-  }
-  async function copyTranslation() {
-    if (!state.hasOutput) {
+  async function handleImageFile(file) {
+    if (!file || !file.type.startsWith("image/")) {
       return;
     }
     try {
-      await navigator.clipboard.writeText(translatedText.textContent);
-      setStatus("Da copy ban dich vao clipboard.", "success");
+      const dataUrl = await new Promise(function(resolve, reject) {
+        const reader = new FileReader();
+        reader.onload = function() {
+          resolve(reader.result);
+        };
+        reader.onerror = function() {
+          reject(new Error("Khong doc duoc file."));
+        };
+        reader.readAsDataURL(file);
+      });
+      const resized = await resizeImageIfNeeded(dataUrl);
+      const rawImage = await RawImage.fromURL(resized);
+      state.selectedImages.push({
+        dataUrl: resized,
+        rawImage
+      });
+      renderImagePreviews();
+      setBusyState();
+      chatInput.focus();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      setStatus(`Khong copy duoc: ${message}`, "error");
+      setStatus(`Khong xu ly duoc anh: ${message}`, "error");
     }
   }
-  function handleDirectionClick(event) {
-    const button = event.currentTarget;
-    const nextDirection = button.dataset.direction;
-    if (!nextDirection || nextDirection === state.direction) {
+  function handleImagePaste(event) {
+    if (state.generating || !model) {
       return;
     }
-    state.direction = nextDirection;
-    updateDirectionUI();
-    resetOutput();
-    setStatus(`Da chuyen sang ${getDirectionMeta().label}.`, "info");
-    sourceText.focus();
+    const items = event.clipboardData?.items;
+    if (!items) return;
+    var handled = false;
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.startsWith("image/")) {
+        event.preventDefault();
+        handled = true;
+        const file = item.getAsFile();
+        handleImageFile(file);
+      }
+    }
+    if (!handled) {
+      return;
+    }
   }
-  function init() {
-    if (!sourcePanelTitle || !sourceText || !translatedText || !translateHint || !translateStatus || !translateButton || !swapButton || !sampleButton || !clearButton || !copyButton || !charCount || !translateMeta) {
+  function appendAssistantPlaceholder() {
+    state.messages.push({
+      role: "assistant",
+      content: "",
+      pending: true,
+      partial: false
+    });
+  }
+  function getActiveAssistantMessage() {
+    return state.messages[state.messages.length - 1];
+  }
+  async function sendMessage() {
+    const userText = chatInput.value.trim();
+    const hasImages = state.selectedImages.length > 0;
+    if (!userText && !hasImages) {
+      setBusyState();
+      chatInput.focus();
       return;
     }
-    updateDirectionUI();
-    updateCharCount();
-    resetOutput();
+    if (model === null || processor === null) {
+      setStatus('Hay nap model truoc khi chat. Bam "Nap model" de tai Gemma 4 E2B.', "error");
+      return;
+    }
+    const userDraft = userText;
+    const userImages = state.selectedImages.slice();
+    const userImageDataUrls = userImages.map(function(img) {
+      return img.dataUrl;
+    });
+    chatInput.value = "";
+    clearSelectedImages();
+    setPromptCount();
+    state.generating = true;
+    state.interruptRequested = false;
+    state.lastUsage = null;
+    state.messages.push({
+      role: "user",
+      content: userDraft || "Hay mo ta nhung buc anh nay.",
+      images: userImages,
+      imageDataUrls: userImageDataUrls
+    });
+    appendAssistantPlaceholder();
+    renderMessages();
+    setBusyState();
+    setStatus(`Dang tra loi voi ${MODEL_LABEL}...`, "info");
+    try {
+      const messages = createApiMessages();
+      const inputs = processor.apply_chat_template(messages, {
+        enable_thinking: state.thinkingEnabled,
+        add_generation_prompt: true,
+        tokenize: true
+      });
+      let accumulatedContent = "";
+      const originalCallback = textStreamer.callback_function;
+      textStreamer.callback_function = function(text) {
+        accumulatedContent += text;
+        const assistantMessage2 = getActiveAssistantMessage();
+        if (assistantMessage2) {
+          assistantMessage2.content = accumulatedContent;
+          renderMessages();
+        }
+      };
+      const promptTokens = inputs.input_ids?.dims?.[1] || 0;
+      const maxNewTokens = Math.min(1024, Math.max(128, state.contextWindow - promptTokens));
+      const generatedIds = await model.generate({
+        ...inputs,
+        max_new_tokens: maxNewTokens,
+        streamer: textStreamer,
+        do_sample: true,
+        temperature: 0.7,
+        top_p: 0.9
+      });
+      textStreamer.callback_function = originalCallback;
+      const assistantMessage = getActiveAssistantMessage();
+      if (assistantMessage) {
+        if (!accumulatedContent.trim()) {
+          assistantMessage.content = "[Model khong tra ve noi dung.]";
+        }
+        assistantMessage.pending = false;
+        assistantMessage.partial = state.interruptRequested;
+        assistantMessage.content = accumulatedContent;
+      }
+      state.lastUsage = {
+        prompt_tokens: inputs.input_ids?.dims?.[1] || 0,
+        completion_tokens: generatedIds.dims?.[1] - (inputs.input_ids?.dims?.[1] || 0),
+        total_tokens: generatedIds.dims?.[1] || 0
+      };
+      renderMessages();
+      buildRuntimeMeta();
+      if (state.interruptRequested) {
+        setStatus("Da dung sinh cau tra loi.", "info");
+      } else {
+        setStatus("AI da tra loi xong.", "success");
+      }
+    } catch (error) {
+      textStreamer.callback_function = function() {
+      };
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes("interrupt") || state.interruptRequested) {
+        const assistantMessage = getActiveAssistantMessage();
+        if (assistantMessage?.pending) {
+          assistantMessage.pending = false;
+          assistantMessage.partial = true;
+          if (!assistantMessage.content.trim()) {
+            assistantMessage.content = "[Da dung som. Ban co the gui tiep de hoi them.]";
+          }
+        }
+        renderMessages();
+        setStatus("Da dung sinh cau tra loi.", "info");
+      } else {
+        const assistantMessage = getActiveAssistantMessage();
+        if (assistantMessage?.pending) {
+          if (!assistantMessage.content.trim()) {
+            state.messages.pop();
+          } else {
+            assistantMessage.pending = false;
+            assistantMessage.partial = true;
+          }
+        }
+        renderMessages();
+        setStatus(`Khong the tao cau tra loi: ${message}`, "error");
+      }
+    } finally {
+      state.generating = false;
+      state.interruptRequested = false;
+      setBusyState();
+      buildRuntimeMeta();
+    }
+  }
+  function handleThinkingToggle() {
+    state.thinkingEnabled = thinkingToggle.checked;
+    updateModelPanel();
     setStatus(
-      "San sang. Ban co the dan nhieu doan van ban. Lan dau mo trang co the can internet de tai model translation vao browser.",
+      state.thinkingEnabled ? "Think mode da bat. Model se suy luan noi bo truoc khi tra loi." : "Think mode da tat. Model tra loi nhanh hon.",
       "info"
     );
-    directionButtons.forEach((button) => {
-      button.addEventListener("click", handleDirectionClick);
+  }
+  function sanitizeContextWindow(value) {
+    const parsed = Number.parseInt(String(value), 10);
+    if (!Number.isFinite(parsed)) {
+      return DEFAULT_CONTEXT;
+    }
+    return Math.max(MIN_CONTEXT, Math.min(MAX_CONTEXT, parsed));
+  }
+  function handleContextWindowChange() {
+    const sanitized = sanitizeContextWindow(contextWindowInput.value);
+    state.contextWindow = sanitized;
+    contextWindowInput.value = String(sanitized);
+    updateModelPanel();
+    setBusyState();
+    setStatus(
+      `Context moi la ${sanitized} tokens. Can nap lai model de ap dung.`,
+      "info"
+    );
+  }
+  function resetContextWindow() {
+    state.contextWindow = DEFAULT_CONTEXT;
+    contextWindowInput.value = String(DEFAULT_CONTEXT);
+    updateModelPanel();
+    setBusyState();
+    setStatus(
+      `Da dua context ve mac dinh ${DEFAULT_CONTEXT} tokens. Can nap lai model neu dang dung.`,
+      "info"
+    );
+  }
+  function toggleSidePanel() {
+    setSidePanelHidden(!state.sidePanelHidden);
+  }
+  function handleSuggestionClick(event) {
+    const button = event.currentTarget;
+    const suggestion = button.dataset.chatSuggestion;
+    if (!suggestion) {
+      return;
+    }
+    chatInput.value = suggestion;
+    setPromptCount();
+    setBusyState();
+    chatInput.focus();
+  }
+  function init() {
+    if (!modelBadge || !modelSummary || !modelRiskBanner || !modelMemory || !modelContext || !modelLowResource || !modelFeatures || !modelStatusNote || !thinkingToggle || !thinkingHelp || !loadModelButton || !newChatButton || !stopButton || !toggleSidePanelButton || !clearInputButton || !systemPromptInput || !chatStatus || !decoyShell || !aiShell || !chatLayout || !chatSidePanel || !chatMessages || !chatMessageCount || !chatInput || !chatPromptCount || !chatRuntimeMeta || !sendButton) {
+      return;
+    }
+    systemPromptInput.value = DEFAULT_SYSTEM_PROMPT;
+    setPromptCount();
+    renderMessages();
+    updateModelPanel();
+    setAiAppVisible(false);
+    setSidePanelHidden(state.sidePanelHidden);
+    buildRuntimeMeta();
+    thinkingToggle.checked = state.thinkingEnabled;
+    if (refreshCacheButton) refreshCacheButton.hidden = true;
+    if (deleteSelectedCacheButton) deleteSelectedCacheButton.hidden = true;
+    if (cacheList) cacheList.innerHTML = '<div class="chat-cache-empty">Gemma 4 dung cache IndexedDB cua trinh duyet. Cache duoc quan ly tu dong.</div>';
+    if (cacheStatus) cacheStatus.textContent = "IndexedDB cache duoc trinh duyet quan ly tu dong.";
+    if (isWebGpuLikelyAvailable()) {
+      setStatus(
+        'San sang. Bam "Nap model" de tai Gemma 4 E2B ve browser. Lan dau can internet de tai ~3.1 GB.',
+        "info"
+      );
+    } else {
+      setStatus(
+        "Trinh duyet nay co ve chua bat WebGPU. Trang chat Gemma 4 se khong chay duoc cho den khi WebGPU san sang.",
+        "error"
+      );
+    }
+    setBusyState();
+    loadModelButton.addEventListener("click", loadModel);
+    newChatButton.addEventListener("click", startNewChat);
+    stopButton.addEventListener("click", stopGeneration);
+    thinkingToggle.addEventListener("change", handleThinkingToggle);
+    toggleSidePanelButton.addEventListener("click", toggleSidePanel);
+    clearInputButton.addEventListener("click", clearInput);
+    sendButton.addEventListener("click", sendMessage);
+    if (contextWindowInput) {
+      contextWindowInput.addEventListener("change", handleContextWindowChange);
+    }
+    if (resetContextWindowButton) {
+      resetContextWindowButton.addEventListener("click", resetContextWindow);
+    }
+    if (imageUploadButton && imageFileInput) {
+      imageUploadButton.addEventListener("click", function() {
+        imageFileInput.click();
+      });
+      imageFileInput.addEventListener("change", function(event) {
+        const files = event.target.files;
+        if (files && files.length > 0) {
+          for (let i = 0; i < files.length; i++) {
+            handleImageFile(files[i]);
+          }
+        }
+      });
+    }
+    chatInput.addEventListener("input", function handlePromptInput() {
+      setPromptCount();
+      setBusyState();
     });
-    sourceText.addEventListener("input", function() {
-      updateCharCount();
-    });
-    sourceText.addEventListener("keydown", function(event) {
+    chatInput.addEventListener("keydown", function handlePromptKeydown(event) {
       if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
         event.preventDefault();
-        translateCurrentText();
+        sendMessage();
+        return;
+      }
+      if (!event.shiftKey && event.key === "Enter") {
+        event.preventDefault();
+        sendMessage();
       }
     });
-    translateButton.addEventListener("click", translateCurrentText);
-    swapButton.addEventListener("click", swapDirection);
-    sampleButton.addEventListener("click", fillSampleText);
-    clearButton.addEventListener("click", clearAll);
-    copyButton.addEventListener("click", copyTranslation);
+    chatInput.addEventListener("paste", handleImagePaste);
+    suggestionButtons.forEach((button) => {
+      button.addEventListener("click", handleSuggestionClick);
+    });
+    window.addEventListener("keydown", handleSecretShortcut);
   }
   init();
 })();
